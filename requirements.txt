@@ -1,0 +1,23 @@
+# --- API layer ---
+fastapi==0.118.0
+uvicorn[standard]==0.37.0
+python-multipart==0.0.20
+
+# --- config & validation ---
+pydantic==2.11.9
+pydantic-settings==2.11.0
+python-dotenv==1.1.1
+
+# --- retrieval ---
+chromadb==1.1.1
+
+# --- generation ---
+anthropic>=1.0.0
+httpx>=0.27.0          # Ollama transport (also an anthropic/chromadb dep)
+
+# --- ingestion helpers ---
+pandas==2.3.2
+
+# --- dev ---
+pytest==8.4.2
+httpx2>=0.1.0
