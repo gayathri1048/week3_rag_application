@@ -172,6 +172,7 @@ Migration credits expire 12 months from the migration date. Credits that are unu
 ## 6. Chunker Choice — Which Ships and Why
 
 Both paragraph and table-aware chunking achieved a perfect 8/8 Hit-in-Top-5 score, so neither strategy had a higher retrieval hit rate. The retrieval case that stood out was Q4, where table-aware chunking had a lower similarity score (0.3504) than paragraph chunking (0.3614), even though both still retrieved the correct BM-002 article at Top-1. This shows that table-aware chunking did not improve every individual retrieval case, but it preserved structured table information effectively while maintaining perfect retrieval coverage. I would keep the table-aware strategy in production because it achieved the same 8/8 Hit-in-Top-5 accuracy and performed better on several queries, particularly Q1, Q2, Q5, and Q8, making it a better fit for support content containing tables and structured error-code information.
+
 ---
 
 ## 7. Bonus — Precision vs Completeness Tension
