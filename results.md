@@ -176,13 +176,14 @@ Both paragraph and table-aware chunking achieved a perfect 8/8 Hit-in-Top-5 scor
 ---
 
 ## 7. Bonus — Precision vs Completeness Tension
-	|                  | Table-aware                                               | Paragraph                                                   |
-| ---------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
-| Top chunk        | `BM-003::t2`                                              | `BM-003::p1`                                                |
-| Top score        | **0.7044**                                                | **0.6857**                                                  |
-| Retrieval winner | ✅ Table-aware                                             |                                                             |
-| Context          | Focuses strongly on the invoice-status table              | Includes broader migration-credit context                   |
-| Final answer     | Includes invoice statuses **and** some credit information | Includes invoice statuses **and** credit expiry information |
+	| | Table-aware | Paragraph |
+|---|---|---|
+| **Top chunk** | `BM-003::t2` | `BM-003::p1` |
+| **Top score** | **0.7044** | **0.6857** |
+| **Retrieval winner** | ✅ Table-aware | |
+| **Context** | Focuses strongly on the invoice-status table | Includes broader migration-credit context |
+| **Final answer** | Includes invoice statuses **and** some credit information | Includes invoice statuses **and** credit expiry information |
+
 
 ---
 
