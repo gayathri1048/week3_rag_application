@@ -172,21 +172,19 @@ Migration credits expire 12 months from the migration date. Credits that are unu
 ## 6. Chunker Choice — Which Ships and Why
 
 Both paragraph and table-aware chunking achieved a perfect 8/8 Hit-in-Top-5 score, so neither strategy had a higher retrieval hit rate. The retrieval case that stood out was Q4, where table-aware chunking had a lower similarity score (0.3504) than paragraph chunking (0.3614), even though both still retrieved the correct BM-002 article at Top-1. This shows that table-aware chunking did not improve every individual retrieval case, but it preserved structured table information effectively while maintaining perfect retrieval coverage. I would keep the table-aware strategy in production because it achieved the same 8/8 Hit-in-Top-5 accuracy and performed better on several queries, particularly Q1, Q2, Q5, and Q8, making it a better fit for support content containing tables and structured error-code information.
-
 ---
 
 ## 7. Bonus — Precision vs Completeness Tension
-	| | Table-aware | Paragraph |
+
+| Metric | Table-aware | Paragraph |
 |---|---|---|
 | **Top chunk** | `BM-003::t2` | `BM-003::p1` |
 | **Top score** | **0.7044** | **0.6857** |
-| **Retrieval winner** | ✅ Table-aware | 
+| **Retrieval winner** | ✅ Table-aware | — |
 | **Context** | Focuses strongly on the invoice-status table | Includes broader migration-credit context |
 | **Final answer** | Includes invoice statuses **and** some credit information | Includes invoice statuses **and** credit expiry information |
 
-
 ---
-
 ## Appendix — Code Diff
 
 Key additions for Week 3:
