@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     cors_origins: Annotated[list[str], NoDecode] = ["*"]
     log_level: str = "info"
 
+    # --- Langfuse Observability ---
+    langfuse_public_key: str | None = None
+    langfuse_secret_key: str | None = None
+    langfuse_host: str = "https://cloud.langfuse.com"
+    langfuse_enabled: bool = True
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_origins(cls, v: object) -> object:

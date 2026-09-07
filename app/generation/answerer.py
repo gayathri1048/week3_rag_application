@@ -18,6 +18,7 @@ from pydantic import ValidationError
 
 from ..config import get_settings
 from ..retrieval.retriever import Retriever, format_context
+from ..telemetry.langfuse_client import log_rag_trace
 from ..schemas import (
     Category,
     ChatMessage,
@@ -163,6 +164,9 @@ class Answerer:
         )
         provider = self._provider()
 
+        t_start = time.perf_counter()
+        chat_response: ChatResponse
+
         if provider == "anthropic":
             messages = self._chat_messages(
                 final_question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
@@ -174,26 +178,26 @@ class Answerer:
             )
 
             if was_refused(response):
-                return ChatResponse(
+                chat_response = ChatResponse(
                     answer=refusal_message(response),
                     sources=[],
                     model=getattr(response, "model", self.settings.claude_model),
                     refused=True,
                 )
+            else:
+                usage = getattr(response, "usage", None)
+                chat_response = ChatResponse(
+                    answer=extract_text(response),
+                    sources=chunks,
+                    model=getattr(response, "model", self.settings.claude_model),
+                    usage={
+                        "input_tokens": getattr(usage, "input_tokens", 0) or 0,
+                        "output_tokens": getattr(usage, "output_tokens", 0) or 0,
+                        "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", 0) or 0,
+                    },
+                )
 
-            usage = getattr(response, "usage", None)
-            return ChatResponse(
-                answer=extract_text(response),
-                sources=chunks,
-                model=getattr(response, "model", self.settings.claude_model),
-                usage={
-                    "input_tokens": getattr(usage, "input_tokens", 0) or 0,
-                    "output_tokens": getattr(usage, "output_tokens", 0) or 0,
-                    "cache_read_input_tokens": getattr(usage, "cache_read_input_tokens", 0) or 0,
-                },
-            )
-
-        if provider == "openai":
+        elif provider == "openai":
             try:
                 answer_text = generate_openai_chat(
                     self._chat_messages(
@@ -201,17 +205,22 @@ class Answerer:
                     ),
                     prompts.CHAT_SYSTEM,
                 )
-            except OpenAIClientError:
-                logger.exception("OpenAI/Groq chat failed — falling back to the local extractor")
-            else:
-                return ChatResponse(
+                chat_response = ChatResponse(
                     answer=answer_text,
                     sources=chunks,
                     model=f"openai/{self.settings.openai_model}",
                     usage=_no_usage(),
                 )
+            except OpenAIClientError:
+                logger.exception("OpenAI/Groq chat failed — falling back to the local extractor")
+                chat_response = ChatResponse(
+                    answer=_build_fallback_answer(final_question, chunks),
+                    sources=chunks,
+                    model="local-extractor (100% free)",
+                    usage=_no_usage(),
+                )
 
-        if provider == "ollama":
+        elif provider == "ollama":
             try:
                 answer_text = generate_ollama_chat(
                     self._chat_messages(
@@ -219,23 +228,42 @@ class Answerer:
                     ),
                     prompts.CHAT_SYSTEM,
                 )
-            except OllamaError:
-                logger.exception("Ollama chat failed — falling back to the local extractor")
-            else:
-                return ChatResponse(
+                chat_response = ChatResponse(
                     answer=answer_text,
                     sources=chunks,
                     model=f"ollama/{self.settings.ollama_model}",
                     usage=_no_usage(),
                 )
+            except OllamaError:
+                logger.exception("Ollama chat failed — falling back to the local extractor")
+                chat_response = ChatResponse(
+                    answer=_build_fallback_answer(final_question, chunks),
+                    sources=chunks,
+                    model="local-extractor (100% free)",
+                    usage=_no_usage(),
+                )
 
-        # Free local RAG extractor: no server, no key, no tokens.
-        return ChatResponse(
-            answer=_build_fallback_answer(final_question, chunks),
-            sources=chunks,
-            model="local-extractor (100% free)",
-            usage=_no_usage(),
+        else:
+            # Free local RAG extractor: no server, no key, no tokens.
+            chat_response = ChatResponse(
+                answer=_build_fallback_answer(final_question, chunks),
+                sources=chunks,
+                model="local-extractor (100% free)",
+                usage=_no_usage(),
+            )
+
+        elapsed_ms = (time.perf_counter() - t_start) * 1000
+        # Telemetry: push trace to Langfuse if configured
+        log_rag_trace(
+            query=final_question,
+            retrieved_chunks=chunks,
+            answer=chat_response.answer,
+            model=chat_response.model,
+            latency_ms=round(elapsed_ms, 2),
+            metadata={"refused": chat_response.refused, "provider": provider},
         )
+
+        return chat_response
 
     def answer_stream(
         self,
