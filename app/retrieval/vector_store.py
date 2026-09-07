@@ -63,8 +63,30 @@ class VectorStore:
         return len(chunks)
 
     def delete_ticket(self, ticket_id: str) -> None:
-        """Remove every chunk belonging to one ticket."""
-        self._collection.delete(where={"ticket_id": ticket_id})
+        """Remove every chunk belonging to one ticket or article."""
+        target_norm = ticket_id.strip().upper()
+
+        for key in ["ticket_id", "article_id"]:
+            try:
+                self._collection.delete(where={key: ticket_id})
+            except Exception:
+                pass
+            try:
+                self._collection.delete(where={key: target_norm})
+            except Exception:
+                pass
+
+        try:
+            all_items = self._collection.get()
+            ids_to_del = [
+                i for i in all_items.get("ids", [])
+                if target_norm in i.upper()
+            ]
+            if ids_to_del:
+                self._collection.delete(ids=ids_to_del)
+                logger.info("deleted %d chunk IDs matching %s: %s", len(ids_to_del), ticket_id, ids_to_del)
+        except Exception as exc:
+            logger.warning("delete_ticket error for %s: %s", ticket_id, exc)
 
     def reset(self) -> None:
         """Drop and recreate the collection — used by `ingest(reset=True)`."""

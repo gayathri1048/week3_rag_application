@@ -23,6 +23,10 @@ from ...schemas import (
     TriageResponse,
 )
 
+import base64
+import time
+from ...config import get_settings
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
@@ -32,6 +36,30 @@ SSE_HEADERS = {
     "Connection": "keep-alive",
     "X-Accel-Buffering": "no",
 }
+
+
+def _save_chat_image(image_base64: str | None, media_type: str | None) -> Path | None:
+    """Save base64 image from chat payload into documents/uploaded_images/."""
+    if not image_base64:
+        return None
+    try:
+        settings = get_settings()
+        images_dir = settings.documents_dir / "uploaded_images"
+        images_dir.mkdir(parents=True, exist_ok=True)
+        ext = "png"
+        if media_type:
+            if "jpeg" in media_type or "jpg" in media_type:
+                ext = "jpg"
+            elif "webp" in media_type:
+                ext = "webp"
+        timestamp = int(time.time() * 1000)
+        target_path = images_dir / f"screenshot_{timestamp}.{ext}"
+        target_path.write_bytes(base64.b64decode(image_base64))
+        logger.info("saved chat uploaded image to %s", target_path)
+        return target_path
+    except Exception as exc:
+        logger.warning("could not save chat image to disk: %s", exc)
+        return None
 
 
 def _api_error(exc: anthropic.APIError) -> HTTPException:
@@ -55,11 +83,19 @@ def chat(
 ) -> ChatResponse:
     """Answer a question about the ticket archive. Returns the full answer at once."""
     try:
+        if request.image_base64:
+            _save_chat_image(request.image_base64, request.image_media_type)
+
         return answerer.answer(
             question=request.message,
             history=request.history,
             filters=request.filters,
+            article_filters=request.article_filters,
             top_k=request.top_k,
+            mode=request.mode,
+            image_base64=request.image_base64,
+            image_media_type=request.image_media_type,
+            image_name=request.image_name,
         )
     except CredentialsError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc)) from exc
@@ -77,12 +113,20 @@ def chat_stream(
 
     Events, in order: `sources` (once), `delta` (many), then `done` or `error`.
     """
+    if request.image_base64:
+        _save_chat_image(request.image_base64, request.image_media_type)
+
     return StreamingResponse(
         answerer.answer_stream(
             question=request.message,
             history=request.history,
             filters=request.filters,
+            article_filters=request.article_filters,
             top_k=request.top_k,
+            mode=request.mode,
+            image_base64=request.image_base64,
+            image_media_type=request.image_media_type,
+            image_name=request.image_name,
         ),
         media_type="text/event-stream",
         headers=SSE_HEADERS,
@@ -132,6 +176,11 @@ def search(
 ) -> SearchResponse:
     """Retrieval only — no Claude call. Useful for debugging what the model sees."""
     chunks = retriever.retrieve(
-        query=request.query, top_k=request.top_k, filters=request.filters
+        query=request.query,
+        top_k=request.top_k,
+        filters=request.filters,
+        article_filters=request.article_filters,
+        mode=request.mode,
+        mmr_lambda=request.mmr_lambda,
     )
-    return SearchResponse(query=request.query, chunks=chunks)
+    return SearchResponse(query=request.query, mode=request.mode, chunks=chunks)

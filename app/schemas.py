@@ -136,16 +136,29 @@ class RetrievedChunk(BaseModel):
     product_area: str | None = None
     last_updated: str | None = None        # stored as ISO string in Chroma
 
+    # Week-4 retrieval diagnostics (dense/BM25/RRF ranks)
+    dense_rank: int | None = None
+    bm25_rank: int | None = None
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    cross_encoder_score: float | None = None
+    cross_encoder_rank: int | None = None
+    retrieval_mode: str | None = None
+
 
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2_000)
     top_k: int | None = Field(default=None, ge=1, le=50)
+    mode: Literal["hybrid", "dense", "bm25", "mmr", "rerank"] = "hybrid"
+    mmr_lambda: float = Field(default=0.7, ge=0.0, le=1.0)
     filters: TicketFilters | None = None
     article_filters: ArticleFilters | None = None
 
 
 class SearchResponse(BaseModel):
     query: str
+    mode: str = "hybrid"
     chunks: list[RetrievedChunk]
 
 
@@ -163,6 +176,10 @@ class ChatRequest(BaseModel):
     filters: TicketFilters | None = None
     article_filters: ArticleFilters | None = None
     top_k: int | None = Field(default=None, ge=1, le=50)
+    mode: Literal["hybrid", "dense", "bm25", "mmr", "rerank"] = "hybrid"
+    image_base64: str | None = Field(default=None, description="Base64 encoded image string for multimodal analysis.")
+    image_media_type: str | None = Field(default=None, description="Image MIME type (e.g. image/png, image/jpeg).")
+    image_name: str | None = Field(default=None, description="Original filename of the attached image.")
 
 
 class ChatResponse(BaseModel):
@@ -249,6 +266,6 @@ class HealthResponse(BaseModel):
 
     # Which backend generation actually runs on right now, as opposed to what
     # LLM_PROVIDER asks for — the two differ whenever a provider is unreachable.
-    llm_provider: Literal["anthropic", "ollama", "fallback"] = "fallback"
+    llm_provider: Literal["anthropic", "ollama", "openai", "fallback"] = "fallback"
     ollama_available: bool = False
     model: str | None = None

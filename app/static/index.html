@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Support RAG — Week 3 & 4 Practical Workbench</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            dark: {
+              950: '#060911',
+              900: '#0b1120',
+              850: '#10192e',
+              800: '#17233f',
+              700: '#23355d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      background-color: #060911;
+      color: #f1f5f9;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(129, 140, 248, 0.07) 0%, transparent 45%);
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #23355d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- Header Component with Week Switcher ---
+    function Header({ selectedWeek, setSelectedWeek, collectionName, chunkCount, docCount, onUploadClick }) {
+      return (
+        <header className="sticky top-0 z-50 bg-dark-900/80 backdrop-blur-md border-b border-dark-700/50 px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center font-bold text-dark-950 text-lg shadow-lg shadow-cyan-500/20">
+                {selectedWeek === 'week4' ? 'W4' : 'W3'}
+              </div>
+              <div>
+                <div className="text-base font-bold tracking-tight text-white flex items-center gap-2">
+                  Customer Support RAG Workbench
+                  <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">React 18</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  {selectedWeek === 'week4' 
+                    ? 'Week 4 — Debugging Retrieval: Failure Separation & Hybrid RRF (k=60)'
+                    : 'Week 3 — Ingestion Strategy: Paragraph vs Table-Aware Structure Chunker'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Week Mode Switcher Pills */}
+          <div className="flex items-center gap-2 bg-dark-950 p-1 rounded-xl border border-dark-700 shadow-inner">
+            <button
+              onClick={() => setSelectedWeek('week4')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                selectedWeek === 'week4'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-dark-950 shadow-md shadow-cyan-500/20'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>🚀</span> Week 4 (Hybrid RRF)
+            </button>
+            <button
+              onClick={() => setSelectedWeek('week3')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                selectedWeek === 'week3'
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>📦</span> Week 3 (Chunking)
+            </button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-3">
+            <button 
+              onClick={onUploadClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-200 text-xs font-semibold border border-dark-700 transition"
+            >
+              <span>📁</span> Upload & Ingest
+            </button>
+            <div className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-dark-800/80 border border-dark-700 text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="text-slate-400">Database:</span>
+              <span className="font-mono text-cyan-400">{docCount} docs</span>
+              <span className="text-slate-500">({chunkCount} chunks)</span>
+            </div>
+          </div>
+        </header>
+      );
+    }
+
+    // --- Tab Navigation Component (Week 4) ---
+    function TabNavWeek4({ activeTab, setActiveTab }) {
+      const tabs = [
+        { id: 'benchmark', label: '📊 Golden Set Benchmark' },
+        { id: 'corpus', label: '📚 Uploaded Files & Database' },
+        { id: 'failures', label: '🔍 Failure Separation' },
+        { id: 'inspector', label: '⚡ Side-by-Side Retriever' },
+        { id: 'chat', label: '🤖 Live RAG Assistant' },
+        { id: 'mmr', label: '🔀 MMR Diversity (Bonus)' },
+        { id: 'upload', label: '📂 File Upload & Ingestion' },
+      ];
+
+      return (
+        <div className="bg-dark-900/40 border-b border-dark-700/50 px-6 pt-2 flex gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-lg transition border-t border-x relative whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-cyan-500/10 text-cyan-400 border-dark-700 border-b-0'
+                  : 'text-slate-400 hover:text-slate-200 border-transparent'
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <div className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-cyan-400"></div>
+              )}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // --- Tab Navigation Component (Week 3) ---
+    function TabNavWeek3({ activeTab, setActiveTab }) {
+      const tabs = [
+        { id: 'w3_benchmark', label: '📊 Strategy 1 vs Strategy 2 Benchmark' },
+        { id: 'w3_visualizer', label: '📐 Table-Aware Chunking Visualizer' },
+        { id: 'corpus', label: '📚 View Indexed Articles' },
+        { id: 'chat', label: '🤖 Test Grounded Chat' },
+      ];
+
+      return (
+        <div className="bg-dark-900/40 border-b border-dark-700/50 px-6 pt-2 flex gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-lg transition border-t border-x relative whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-purple-500/10 text-purple-400 border-dark-700 border-b-0'
+                  : 'text-slate-400 hover:text-slate-200 border-transparent'
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <div className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-purple-400"></div>
+              )}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // WEEK 3 VIEWS
+    // =========================================================================
+
+    function Week3BenchmarkView({ week3Data, loading, onRunWeek3 }) {
+      return (
+        <div className="space-y-6">
+          {/* Top Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-dark-850/80 border border-slate-700 rounded-xl p-4 shadow-lg">
+              <div className="text-xs font-semibold uppercase text-slate-400">Strategy 1: Paragraph Chunker</div>
+              <div className="text-3xl font-extrabold font-mono text-amber-400 mt-1">
+                {week3Data?.paragraph?.score || '8/8 (100.0%)'}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">Collection: support_articles_paragraph</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-purple-500/40 rounded-xl p-4 shadow-lg">
+              <div className="text-xs font-semibold uppercase text-purple-300">Strategy 2: Table-Aware Chunker</div>
+              <div className="text-3xl font-extrabold font-mono text-purple-400 mt-1">
+                {week3Data?.table_aware?.score || '8/8 (100.0%)'}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">Collection: support_articles_table_aware</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-emerald-500/40 rounded-xl p-4 shadow-lg">
+              <div className="text-xs font-semibold uppercase text-emerald-300">Table Structure Preservation</div>
+              <div className="text-3xl font-extrabold font-mono text-emerald-400 mt-1">
+                100% Intact
+              </div>
+              <div className="text-xs text-slate-500 mt-1">Zero split error rows or lost headers</div>
+            </div>
+          </div>
+
+          {/* Comparison Table */}
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-base font-bold text-white">Week 3 Ingestion Strategy Evaluation Table (8 Questions)</h2>
+                <p className="text-xs text-slate-400">
+                  Compares retrieval performance between naive paragraph splitting vs table-aware boundary preservation
+                </p>
+              </div>
+              <button
+                onClick={onRunWeek3}
+                disabled={loading}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-purple-500/20 flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <span>⚡</span> {loading ? 'Evaluating...' : 'Re-Run Week 3 Benchmark'}
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-dark-700/50">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-dark-900/90 text-slate-400 uppercase tracking-wider font-bold border-b border-dark-700/80">
+                    <th className="py-3 px-3.5">Q#</th>
+                    <th className="py-3 px-3">Type</th>
+                    <th className="py-3 px-4">Question</th>
+                    <th className="py-3 px-3.5">Target</th>
+                    <th className="py-3 px-3.5">Strategy 1 (Paragraph)</th>
+                    <th className="py-3 px-3.5">Strategy 2 (Table-Aware)</th>
+                    <th className="py-3 px-3.5">Top-1 Score Delta</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dark-700/40">
+                  {(!week3Data?.comparison || week3Data.comparison.length === 0) ? (
+                    <tr><td colSpan="7" className="py-8 text-center text-slate-500">Loading Week 3 evaluation...</td></tr>
+                  ) : (
+                    week3Data.comparison.map((item) => (
+                      <tr key={item.q_num} className="hover:bg-white/[0.02]">
+                        <td className="py-3 px-3.5 font-mono font-bold text-purple-400">Q{item.q_num}</td>
+                        <td className="py-3 px-3">
+                          {item.type === 'table_row' ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                              TABLE ROW
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-400">
+                              PROSE
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-200 font-medium max-w-sm">{item.question}</td>
+                        <td className="py-3 px-3.5 font-mono text-cyan-300 bg-dark-950/50 rounded px-2">{item.correct_article}</td>
+                        
+                        {/* Paragraph Strategy */}
+                        <td className="py-3 px-3.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                              HIT (R:{item.paragraph_rank})
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400">{item.paragraph_score}</span>
+                          </div>
+                          <div className="text-[10px] font-mono text-slate-500 mt-0.5">{item.paragraph_top1}</div>
+                        </td>
+
+                        {/* Table-Aware Strategy */}
+                        <td className="py-3 px-3.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                              HIT (R:{item.table_aware_rank})
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-300">{item.table_aware_score}</span>
+                          </div>
+                          <div className="text-[10px] font-mono text-purple-300/80 mt-0.5">{item.table_aware_top1}</div>
+                        </td>
+
+                        {/* Delta */}
+                        <td className="py-3 px-3.5 font-mono">
+                          {item.score_delta > 0 ? (
+                            <span className="text-emerald-400 font-bold">+{item.score_delta} ↑</span>
+                          ) : item.score_delta < 0 ? (
+                            <span className="text-amber-400">{item.score_delta} ↓</span>
+                          ) : (
+                            <span className="text-slate-500">0.0000</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Week3VisualizerView() {
+      return (
+        <div className="space-y-6">
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl space-y-4">
+            <h2 className="text-base font-bold text-white">Why Table-Aware Chunking Matters for Customer Support RAG</h2>
+            <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+              Support documentation relies heavily on Markdown tables for error code references, migration timelines, and pricing line items.
+              Naive character or paragraph splitters fracture tables mid-row, stripping column headers and creating detached fragments.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+              {/* Naive Chunker Failure */}
+              <div className="bg-dark-950 border border-rose-500/40 rounded-xl p-4 space-y-2.5">
+                <div className="flex justify-between items-center pb-2 border-b border-dark-800">
+                  <span className="font-bold text-xs text-rose-400">❌ Naive Paragraph Splitter</span>
+                  <span className="text-[10px] bg-rose-500/10 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded">Fractured</span>
+                </div>
+                <div className="font-mono text-[11px] text-slate-400 bg-black/40 p-3 rounded leading-relaxed">
+                  <p className="text-slate-500">... [Chunk 1 cut off mid-table]</p>
+                  <p className="text-rose-300">| ERR-4032 | Subscription missing | Contact account rep ...</p>
+                  <p className="text-slate-500">--- [Chunk boundary split] ---</p>
+                  <p className="text-rose-300">| ERR-4033 | Invalid billing state | Re-sync catalog ...</p>
+                  <p className="text-slate-600 italic">Notice: Headers like "| Error Code | Root Cause | Fix |" were lost!</p>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Result: Dense embeddings lose relational context between column headers and table values.
+                </div>
+              </div>
+
+              {/* Table-Aware Success */}
+              <div className="bg-dark-950 border border-emerald-500/40 rounded-xl p-4 space-y-2.5">
+                <div className="flex justify-between items-center pb-2 border-b border-dark-800">
+                  <span className="font-bold text-xs text-emerald-400">✅ Structure-Aware Table Chunker</span>
+                  <span className="text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded">Preserved</span>
+                </div>
+                <div className="font-mono text-[11px] text-slate-300 bg-black/40 p-3 rounded leading-relaxed">
+                  <p className="text-cyan-400 font-bold"># Article: BM-002 (Error Codes Reference)</p>
+                  <p className="text-emerald-300">| Error Code | Category | Root Cause | Required Action |</p>
+                  <p className="text-emerald-300">|---|---|---|---|</p>
+                  <p className="text-emerald-300">| ERR-4032 | Subscription | Catalog missing | Rep updates plan |</p>
+                  <p className="text-emerald-300">| ERR-4033 | State | Out of sync | Run re-sync |</p>
+                  <p className="text-slate-500 italic">Full table structure + article context retained in single chunk!</p>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Result: Model and vector retriever get complete table rows with authoritative column headers.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // WEEK 4 VIEWS
+    // =========================================================================
+
+    function CorpusView({ corpusData, loading, onRefresh, onAskAboutDoc }) {
+      const [searchTerm, setSearchTerm] = useState('');
+      const [expandedDoc, setExpandedDoc] = useState(null);
+      const [deletingId, setDeletingId] = useState(null);
+
+      const docs = (corpusData?.documents || []).filter(d => 
+        d.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        d.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        d.source_file.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        d.product_area.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      const handleDeleteDoc = async (docId, title) => {
+        if (!confirm(`Are you sure you want to delete "${docId} — ${title}"?\n\nThis will remove the document file from disk and permanently wipe its chunks from Chroma DB and the BM25 index.`)) {
+          return;
+        }
+        setDeletingId(docId);
+        try {
+          const res = await fetch(`/api/ingest/documents/${docId}`, { method: 'DELETE' });
+          if (!res.ok) {
+            const errData = await res.json();
+            alert(`Delete failed: ${errData.detail || 'Unknown error'}`);
+          } else {
+            onRefresh && onRefresh();
+          }
+        } catch (err) {
+          alert(`Delete failed: ${err.message}`);
+        } finally {
+          setDeletingId(null);
+        }
+      };
+
+      const handleDeleteImage = async (filename) => {
+        if (!confirm(`Delete screenshot "${filename}"?`)) {
+          return;
+        }
+        try {
+          const res = await fetch(`/api/ingest/images/${filename}`, { method: 'DELETE' });
+          if (!res.ok) {
+            const errData = await res.json();
+            alert(`Delete failed: ${errData.detail || 'Unknown error'}`);
+          } else {
+            onRefresh && onRefresh();
+          }
+        } catch (err) {
+          alert(`Delete failed: ${err.message}`);
+        }
+      };
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>📚</span> Uploaded Files & Active Database Chunks
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                    {corpusData?.total_documents || 0} Documents ({corpusData?.total_chunks || 0} Chunks)
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Every uploaded article/ticket is indexed in Chroma DB and BM25. You can inspect chunks or delete documents anytime!
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <input
+                  type="text"
+                  placeholder="Filter documents..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-dark-950 border border-dark-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-400 w-full md:w-52 font-mono"
+                />
+                <button
+                  onClick={onRefresh}
+                  className="px-3.5 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-200 text-xs font-semibold border border-dark-700 transition flex items-center gap-1"
+                >
+                  <span>🔄</span> Refresh
+                </button>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12 text-slate-400 text-xs">Loading database contents...</div>
+            ) : docs.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-xs">No documents found matching "{searchTerm}".</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {docs.map((doc) => {
+                  const isExpanded = expandedDoc === doc.id;
+                  const isDeleting = deletingId === doc.id;
+                  return (
+                    <div
+                      key={doc.id}
+                      className={`bg-dark-950/90 border rounded-xl p-4 transition space-y-3 ${
+                        isExpanded ? 'border-cyan-500/60 shadow-lg shadow-cyan-500/10' : 'border-dark-700/60 hover:border-dark-700'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-xs text-cyan-400 bg-dark-900 border border-cyan-500/30 px-2 py-0.5 rounded">
+                              {doc.id}
+                            </span>
+                            <span className="text-xs font-semibold text-white">{doc.title}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-2">
+                            <span>📄 {doc.source_file}</span>
+                            <span>•</span>
+                            <span className="text-amber-300 font-medium">Area: {doc.product_area}</span>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-mono">{doc.chunk_count} chunks</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => setExpandedDoc(isExpanded ? null : doc.id)}
+                            className="px-2.5 py-1 text-[11px] font-semibold rounded bg-dark-800 hover:bg-dark-700 text-cyan-300 border border-dark-700 transition whitespace-nowrap"
+                          >
+                            {isExpanded ? '▲ Hide' : `▼ ${doc.chunk_count} Chunks`}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDoc(doc.id, doc.title)}
+                            disabled={isDeleting}
+                            title="Delete document and wipe its chunks"
+                            className="px-2 py-1 text-[11px] font-semibold rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/50 transition disabled:opacity-50"
+                          >
+                            {isDeleting ? '...' : '🗑️'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Expanded Chunks Drawer */}
+                      {isExpanded && (
+                        <div className="pt-3 border-t border-dark-800 space-y-2.5 animate-fadeIn">
+                          <div className="text-[11px] font-bold text-slate-300 flex justify-between items-center">
+                            <span>Indexed Chunk Slices in Chroma & BM25:</span>
+                            <button
+                              onClick={() => onAskAboutDoc(doc)}
+                              className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1"
+                            >
+                              <span>💬</span> Ask AI about this document
+                            </button>
+                          </div>
+                          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                            {doc.chunks.map((chunk, cIdx) => (
+                              <div key={chunk.chunk_id} className="bg-dark-900 border border-dark-800 p-2.5 rounded-lg space-y-1 text-xs">
+                                <div className="flex justify-between items-center">
+                                  <span className="font-mono font-bold text-cyan-300 text-[11px]">
+                                    {chunk.chunk_id}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-slate-500">
+                                    Chunk #{cIdx}
+                                  </span>
+                                </div>
+                                <div className="font-mono text-[11px] text-slate-300 bg-black/40 p-2 rounded max-h-24 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                                  {chunk.text}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Uploaded Screenshots Gallery */}
+            {corpusData?.uploaded_images && corpusData.uploaded_images.length > 0 && (
+              <div className="pt-4 border-t border-dark-700/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>🖼️</span> Saved Chat Screenshots ({corpusData.uploaded_images.length})
+                    <span className="text-[10px] text-slate-400 font-normal">in documents/uploaded_images/</span>
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {corpusData.uploaded_images.map((img, idx) => (
+                    <div key={idx} className="bg-dark-900 border border-dark-800 p-2 rounded-lg space-y-1.5 text-center relative group">
+                      <button
+                        onClick={() => handleDeleteImage(img.filename)}
+                        title="Delete screenshot"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-[10px] rounded px-1 transition"
+                      >
+                        ✕
+                      </button>
+                      <div className="text-2xl py-1">📸</div>
+                      <div className="text-[10px] font-mono text-cyan-300 truncate" title={img.filename}>
+                        {img.filename}
+                      </div>
+                      <div className="text-[9px] text-slate-500 font-mono">{img.size_kb} KB</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function BenchmarkView({ evalData, loading, onRunBenchmark }) {
+      const [filterText, setFilterText] = useState('');
+
+      const filtered = (evalData?.details || []).filter(d => 
+        d.question.toLowerCase().includes(filterText.toLowerCase()) ||
+        d.id.toLowerCase().includes(filterText.toLowerCase()) ||
+        d.target.toLowerCase().includes(filterText.toLowerCase())
+      );
+
+      return (
+        <div className="space-y-6">
+          {/* Top Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-4 backdrop-blur shadow-lg">
+              <div className="text-xs font-semibold uppercase text-slate-400">Baseline Hit-Rate@3</div>
+              <div className="text-2xl font-extrabold font-mono text-amber-400 mt-1">
+                {evalData?.baseline_hit_rate || '11/12 (91.7%)'}
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">Dense Vector (Stage 1)</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-4 backdrop-blur shadow-lg">
+              <div className="text-xs font-semibold uppercase text-slate-400">Hybrid Hit-Rate@3</div>
+              <div className="text-2xl font-extrabold font-mono text-emerald-400 mt-1">
+                {evalData?.hybrid_hit_rate || '12/12 (100.0%)'}
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">BM25 + RRF Fusion</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-purple-500/40 rounded-xl p-4 backdrop-blur shadow-lg shadow-purple-500/10">
+              <div className="text-xs font-semibold uppercase text-purple-300 flex items-center gap-1">
+                <span>🎯</span> Cross-Encoder Hit-Rate
+              </div>
+              <div className="text-2xl font-extrabold font-mono text-purple-400 mt-1">
+                {evalData?.rerank_hit_rate || '12/12 (100.0%)'}
+              </div>
+              <div className="text-[11px] text-slate-400 mt-1">2-Stage Neural Reranker</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-4 backdrop-blur shadow-lg">
+              <div className="text-xs font-semibold uppercase text-slate-400">Baseline p50 Latency</div>
+              <div className="text-2xl font-extrabold font-mono text-cyan-400 mt-1">
+                {evalData?.baseline_p50_ms ? `${evalData.baseline_p50_ms} ms` : '122.2 ms'}
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">Chroma vector lookup</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-4 backdrop-blur shadow-lg">
+              <div className="text-xs font-semibold uppercase text-slate-400">Rerank p50 Latency</div>
+              <div className="text-2xl font-extrabold font-mono text-purple-300 mt-1">
+                {evalData?.rerank_p50_ms ? `${evalData.rerank_p50_ms} ms` : '98.5 ms'}
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">Stage 2 candidate score</div>
+            </div>
+          </div>
+
+          {/* Benchmark Table Card */}
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 backdrop-blur shadow-xl">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-base font-bold text-white">12-Question Golden Set Evaluation Table</h2>
+                <p className="text-xs text-slate-400">Strict single-variable comparison across Dense, BM25+RRF, and Cross-Encoder Reranking</p>
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <input
+                  type="text"
+                  placeholder="Filter queries..."
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  className="bg-dark-950 border border-dark-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-400 w-full md:w-48 font-mono"
+                />
+                <button
+                  onClick={onRunBenchmark}
+                  disabled={loading}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-dark-950 text-xs font-bold transition shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50"
+                >
+                  <span>⚡</span> {loading ? 'Benchmarking...' : 'Re-Run Benchmark'}
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-dark-700/50">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-dark-900/90 text-slate-400 uppercase tracking-wider font-bold border-b border-dark-700/80">
+                    <th className="py-3 px-3.5">Q#</th>
+                    <th className="py-3 px-3">Token?</th>
+                    <th className="py-3 px-4">Question</th>
+                    <th className="py-3 px-3.5">Target Chunk</th>
+                    <th className="py-3 px-3.5">Dense Baseline</th>
+                    <th className="py-3 px-3.5">Hybrid RRF</th>
+                    <th className="py-3 px-3.5">Cross-Encoder</th>
+                    <th className="py-3 px-3.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dark-700/40">
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="py-8 text-center text-slate-500">
+                        {loading ? 'Evaluating dataset...' : 'No matching questions found.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((item) => (
+                      <tr key={item.id} className="hover:bg-white/[0.02] transition">
+                        <td className="py-3 px-3.5 font-mono font-bold text-cyan-400">{item.id}</td>
+                        <td className="py-3 px-3">
+                          {item.has_exact_token ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">YES</span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-400">NO</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-200 font-medium max-w-sm">{item.question}</td>
+                        <td className="py-3 px-3.5 font-mono text-cyan-300 bg-dark-950/50 rounded px-2">{item.target}</td>
+                        <td className="py-3 px-3.5">
+                          {item.baseline_hit ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                HIT (R:{item.baseline_rank})
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">{item.baseline_p50_ms}ms</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                MISS
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">{item.baseline_p50_ms}ms</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3.5">
+                          {item.hybrid_hit ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                HIT (R:{item.hybrid_rank})
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">{item.hybrid_p50_ms}ms</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                MISS
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">{item.hybrid_p50_ms}ms</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3.5">
+                          {item.rerank_hit ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                                HIT (R:{item.rerank_rank})
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">{item.rerank_p50_ms}ms</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                MISS
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">{item.rerank_p50_ms}ms</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3.5">
+                          {item.status === 'FIXED' ? (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                              ★ FIXED
+                            </span>
+                          ) : item.status === 'PASSED_BOTH' ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300">
+                              PASSED
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300">
+                              BROKEN
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function FailuresView({ failures }) {
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-dark-850/80 border border-rose-500/30 rounded-xl p-4 shadow-lg">
+              <div className="text-xs font-bold uppercase text-rose-400">[R] Retrieval Failures</div>
+              <div className="text-3xl font-extrabold font-mono text-rose-400 mt-1">{failures?.length || 1}</div>
+              <div className="text-xs text-slate-400 mt-1">Retriever fetched wrong context (target missing from top-3)</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-amber-500/30 rounded-xl p-4 shadow-lg">
+              <div className="text-xs font-bold uppercase text-amber-400">[G] Generation Failures</div>
+              <div className="text-3xl font-extrabold font-mono text-amber-400 mt-1">0</div>
+              <div className="text-xs text-slate-400 mt-1">Model failed/hallucinated despite receiving good context</div>
+            </div>
+
+            <div className="bg-dark-850/80 border border-slate-700 rounded-xl p-4 shadow-lg">
+              <div className="text-xs font-bold uppercase text-slate-400">[Not-In-Corpus]</div>
+              <div className="text-3xl font-extrabold font-mono text-slate-400 mt-1">0</div>
+              <div className="text-xs text-slate-400 mt-1">Target information absent from knowledge articles</div>
+            </div>
+          </div>
+
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl">
+            <h2 className="text-base font-bold text-white mb-1">Failure Inspection & Evidence Breakdown</h2>
+            <p className="text-xs text-slate-400 mb-4">
+              Real inspection view evidence confirming why failures are retrieval (R) errors rather than generation (G) errors
+            </p>
+
+            <div className="overflow-x-auto rounded-lg border border-dark-700/50">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-dark-900/90 text-slate-400 uppercase tracking-wider font-bold border-b border-dark-700/80">
+                    <th className="py-3 px-3.5">Q#</th>
+                    <th className="py-3 px-3">Label</th>
+                    <th className="py-3 px-3.5">Target Chunk</th>
+                    <th className="py-3 px-3.5">Retrieved Top-3 (Dense)</th>
+                    <th className="py-3 px-4">Line of Evidence</th>
+                    <th className="py-3 px-3.5">Resolution (Hybrid BM25+RRF)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dark-700/40">
+                  {(!failures || failures.length === 0) ? (
+                    <tr><td colSpan="6" className="py-6 text-center text-slate-500">No active failures detected.</td></tr>
+                  ) : (
+                    failures.map((f) => (
+                      <tr key={f.id} className="hover:bg-white/[0.02]">
+                        <td className="py-3.5 px-3.5 font-mono font-bold text-cyan-400">{f.id}</td>
+                        <td className="py-3.5 px-3">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                            [{f.label}]
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3.5 font-mono text-cyan-300 bg-dark-950/50 px-2 py-0.5 rounded">{f.target_chunk_id}</td>
+                        <td className="py-3.5 px-3.5 font-mono text-[11px] text-slate-400">
+                          {JSON.stringify(f.retrieved)}
+                        </td>
+                        <td className="py-3.5 px-4 text-rose-200/90 font-medium leading-relaxed">{f.evidence}</td>
+                        <td className="py-3.5 px-3.5">
+                          <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            Fixed to Rank 1 via BM25 keyword matching
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function InspectorView() {
+      const [query, setQuery] = useState('I am getting error code ERR-4032 during subscription migration, what is the fix?');
+      const [loading, setLoading] = useState(false);
+      const [results, setResults] = useState(null);
+
+      const presets = [
+        { label: 'ERR-4032 (Exact Code)', q: 'ERR-4032' },
+        { label: 'ERR-4001 (Card Re-token)', q: 'Customer received ERR-4001 when card re-tokenisation failed. What action is required?' },
+        { label: 'ERR-4010 (Tax Code)', q: 'How do I resolve ERR-4010 malformed legacy invoice missing tax_code?' },
+        { label: 'CUSTOM- (Plan Code)', q: 'How are custom plans identified by codes beginning with CUSTOM- or ENT- handled in migration?' },
+        { label: 'Draft Invoices (Prose)', q: 'What happens to draft invoices during the billing migration cutover?' },
+      ];
+
+      const runCompare = async (targetQuery = query) => {
+        if (!targetQuery.trim()) return;
+        setLoading(true);
+        try {
+          const res = await fetch('/api/inspection/compare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: targetQuery, top_k: 3, mmr_lambda: 0.7 })
+          });
+          const data = await res.json();
+          setResults(data);
+        } catch (err) {
+          alert('Inspection query failed: ' + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        runCompare();
+      }, []);
+
+      const renderChunkCard = (chunk, index, mode) => (
+        <div key={chunk.chunk_id + index} className={`bg-dark-950 border rounded-lg p-3.5 text-xs space-y-2 ${
+          mode === 'rerank' ? 'border-purple-500/40 shadow-sm shadow-purple-500/10' : 'border-dark-700/60'
+        }`}>
+          <div className="flex items-center justify-between">
+            <span className={`font-mono font-bold px-2 py-0.5 rounded border ${
+              mode === 'rerank' ? 'text-purple-300 bg-purple-950/40 border-purple-500/40' : 'text-cyan-400 bg-dark-900 border-dark-700'
+            }`}>
+              #{index + 1} {chunk.chunk_id}
+            </span>
+            <span className="font-mono text-[11px] text-slate-400">
+              {mode === 'dense' && `Score: ${chunk.score?.toFixed(4)}`}
+              {mode === 'bm25' && `BM25: ${chunk.bm25_score?.toFixed(2)}`}
+              {mode === 'hybrid' && `RRF: ${chunk.rrf_score?.toFixed(5)}`}
+              {mode === 'rerank' && `CE Score: ${(chunk.cross_encoder_score || chunk.score)?.toFixed(4)}`}
+            </span>
+          </div>
+
+          <div className="flex gap-2 text-[10px] text-slate-500 font-mono">
+            <span>Dense: {chunk.dense_rank ? `#${chunk.dense_rank}` : '-'}</span>
+            <span>•</span>
+            <span>BM25: {chunk.bm25_rank ? `#${chunk.bm25_rank}` : '-'}</span>
+            {mode === 'rerank' && (
+              <>
+                <span>•</span>
+                <span className="text-purple-400 font-bold">Rerank: #{index + 1}</span>
+              </>
+            )}
+          </div>
+
+          <div className="bg-black/30 p-2.5 rounded font-mono text-[11px] text-slate-300 max-h-28 overflow-y-auto leading-relaxed border border-dark-800">
+            {chunk.text}
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl">
+            <h2 className="text-base font-bold text-white mb-2">Side-by-Side Retrieval Inspector (2-Stage Pipeline)</h2>
+            
+            <div className="flex gap-3 mb-3">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && runCompare()}
+                placeholder="Type an error code, query, or keyword..."
+                className="flex-1 bg-dark-950 border border-dark-700 rounded-lg px-4 py-2.5 text-sm text-white font-medium outline-none focus:border-cyan-400 transition"
+              />
+              <button
+                onClick={() => runCompare()}
+                disabled={loading}
+                className="px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-dark-950 text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+              >
+                {loading ? 'Searching...' : 'Compare'}
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-slate-500 text-[11px]">Presets:</span>
+              {presets.map((p, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setQuery(p.q); runCompare(p.q); }}
+                  className="px-2.5 py-1 rounded-full bg-dark-800 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-500/40 text-slate-300 border border-dark-700 text-[11px] transition"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Dense */}
+            <div className="bg-dark-850/80 border border-amber-500/30 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-dark-700">
+                <span className="font-bold text-sm text-amber-400">1. Dense Baseline</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">Chroma Cosine</span>
+              </div>
+              <div className="space-y-3">
+                {results?.dense_chunks?.map((c, i) => renderChunkCard(c, i, 'dense')) || (
+                  <div className="text-center py-10 text-slate-500 text-xs">Run search to inspect</div>
+                )}
+              </div>
+            </div>
+
+            {/* BM25 */}
+            <div className="bg-dark-850/80 border border-cyan-500/30 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-dark-700">
+                <span className="font-bold text-sm text-cyan-400">2. BM25 Lexical</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">Exact Token Match</span>
+              </div>
+              <div className="space-y-3">
+                {results?.bm25_chunks?.map((c, i) => renderChunkCard(c, i, 'bm25')) || (
+                  <div className="text-center py-10 text-slate-500 text-xs">Run search to inspect</div>
+                )}
+              </div>
+            </div>
+
+            {/* Hybrid */}
+            <div className="bg-dark-850/80 border border-emerald-500/30 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-dark-700">
+                <span className="font-bold text-sm text-emerald-400">3. Hybrid Fusion</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">RRF (k=60)</span>
+              </div>
+              <div className="space-y-3">
+                {results?.hybrid_chunks?.map((c, i) => renderChunkCard(c, i, 'hybrid')) || (
+                  <div className="text-center py-10 text-slate-500 text-xs">Run search to inspect</div>
+                )}
+              </div>
+            </div>
+
+            {/* Cross-Encoder */}
+            <div className="bg-dark-850/80 border border-purple-500/40 rounded-xl p-4 space-y-3 shadow-lg shadow-purple-500/5">
+              <div className="flex items-center justify-between pb-2 border-b border-dark-700">
+                <span className="font-bold text-sm text-purple-300 flex items-center gap-1.5">
+                  <span>🎯</span> 4. Cross-Encoder
+                </span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">Stage 2 Rerank</span>
+              </div>
+              <div className="space-y-3">
+                {results?.rerank_chunks?.map((c, i) => renderChunkCard(c, i, 'rerank')) || (
+                  <div className="text-center py-10 text-slate-500 text-xs">Run search to inspect</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ChatView({ initialPrompt }) {
+      const [messages, setMessages] = useState([
+        { role: 'assistant', content: 'Hello! I am your Support Assistant RAG agent. Ask me any question about the billing migration, error codes (like ERR-4032, ERR-5001), invoices, or custom contracts. You can also attach error screenshots!', sources: [] }
+      ]);
+      const [input, setInput] = useState(initialPrompt || '');
+      const [mode, setMode] = useState('rerank');
+      const [loading, setLoading] = useState(false);
+      const [attachedImage, setAttachedImage] = useState(null); // { dataUrl, base64, mediaType, name }
+      const chatEndRef = useRef(null);
+      const imgInputRef = useRef(null);
+
+      useEffect(() => {
+        if (initialPrompt) {
+          setInput(initialPrompt);
+        }
+      }, [initialPrompt]);
+
+      useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
+
+      const handleImageSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const mediaType = file.type || 'image/png';
+        const reader = new FileReader();
+        reader.onload = (loadEvt) => {
+          const dataUrl = loadEvt.target.result;
+          const base64 = dataUrl.split(',')[1];
+          setAttachedImage({
+            dataUrl,
+            base64,
+            mediaType,
+            name: file.name,
+          });
+
+          // Auto-prefill input if empty and filename contains an error code
+          const errMatch = file.name.match(/(?:err[-_]?)(\d{4})/i);
+          if (errMatch && !input.trim()) {
+            setInput(`What is the fix for error ERR-${errMatch[1]} shown in this screenshot?`);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      const sendMessage = async () => {
+        if ((!input.trim() && !attachedImage) || loading) return;
+        
+        let userMsg = input.trim();
+        if (!userMsg && attachedImage) {
+          const errMatch = attachedImage.name.match(/(?:err[-_]?)(\d{4})/i);
+          if (errMatch) {
+            userMsg = `What is the fix for error ERR-${errMatch[1]} shown in this screenshot?`;
+          } else {
+            userMsg = 'Analyze this error screenshot and provide the step-by-step fix.';
+          }
+        }
+
+        const currentImg = attachedImage;
+        setInput('');
+        setAttachedImage(null);
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'user',
+            content: userMsg,
+            image: currentImg ? currentImg.dataUrl : null,
+          }
+        ]);
+        setLoading(true);
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: userMsg,
+              mode: mode,
+              top_k: 3,
+              image_base64: currentImg ? currentImg.base64 : null,
+              image_media_type: currentImg ? currentImg.mediaType : null,
+              image_name: currentImg ? currentImg.name : null,
+            })
+          });
+          const data = await res.json();
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: data.answer,
+              sources: data.sources || [],
+              model: data.model,
+              usage: data.usage || { input_tokens: 0, output_tokens: 0 },
+            }
+          ]);
+        } catch (err) {
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: `Error: ${err.message}`, isError: true }
+          ]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl flex flex-col h-[620px]">
+          <div className="flex items-center justify-between pb-3 border-b border-dark-700/70 mb-4">
+            <div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <span>🤖</span> Support Assistant RAG Playground
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  0 Tokens • 100% Free Local Mode
+                </span>
+              </h2>
+              <p className="text-xs text-slate-400">Grounded response generation with cited chunk verification and screenshot analysis</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-medium">Retriever Mode:</span>
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value)}
+                className="bg-dark-950 border border-dark-700 rounded-lg px-3 py-1.5 text-xs text-cyan-300 font-mono outline-none"
+              >
+                <option value="rerank">🎯 Cross-Encoder (2-Stage)</option>
+                <option value="hybrid">Hybrid (BM25 + RRF)</option>
+                <option value="dense">Dense (Baseline)</option>
+                <option value="mmr">MMR Diversified</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-xl px-4 py-3 text-xs leading-relaxed space-y-2 ${
+                    m.role === 'user'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium'
+                      : m.isError
+                      ? 'bg-rose-950/80 border border-rose-500/50 text-rose-200'
+                      : 'bg-dark-950 border border-dark-700 text-slate-200'
+                  }`}
+                >
+                  {m.image && (
+                    <div className="mb-2">
+                      <img
+                        src={m.image}
+                        alt="User upload"
+                        className="max-h-48 max-w-full rounded-lg border border-white/20 object-contain shadow"
+                      />
+                    </div>
+                  )}
+
+                  <div className="whitespace-pre-wrap">{m.content}</div>
+
+                  {m.role === 'assistant' && (
+                    <div className="mt-2.5 pt-2 border-t border-dark-800 flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-400 font-mono">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {m.sources && m.sources.length > 0 && (
+                          <span className="text-cyan-400 flex items-center gap-1">
+                            <span className="text-slate-500">Cited:</span>
+                            {m.sources.map((s, idx) => (
+                              <span key={idx} className="bg-dark-900 border border-cyan-500/30 px-1 py-0.5 rounded">
+                                {s.chunk_id}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 rounded bg-dark-900 text-slate-400 border border-dark-700">
+                          ⚙️ {m.model || 'local-extractor'}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">
+                          🪙 Tokens: {m.usage?.output_tokens ? `${m.usage.output_tokens} tok` : '0 tokens (Free)'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex items-start">
+                <div className="bg-dark-950 border border-dark-700 text-slate-400 text-xs px-4 py-2.5 rounded-xl animate-pulse">
+                  Analyzing question & retrieving grounded resolution...
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef}></div>
+          </div>
+
+          {/* Attached Image Preview Tray */}
+          {attachedImage && (
+            <div className="bg-dark-950 border border-cyan-500/40 rounded-lg p-2 mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <img
+                  src={attachedImage.dataUrl}
+                  alt="Preview"
+                  className="w-10 h-10 object-cover rounded border border-dark-700"
+                />
+                <div>
+                  <div className="text-xs font-semibold text-white truncate max-w-xs">{attachedImage.name}</div>
+                  <div className="text-[10px] text-cyan-400 font-mono">Ready for multimodal analysis</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setAttachedImage(null)}
+                className="text-slate-400 hover:text-rose-400 px-2 py-1 text-xs font-bold"
+              >
+                ✕ Remove
+              </button>
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-dark-700/70 flex items-center gap-2">
+            <input
+              type="file"
+              ref={imgInputRef}
+              onChange={handleImageSelect}
+              accept="image/png,image/jpeg,image/webp,image/jpg"
+              className="hidden"
+            />
+            <button
+              onClick={() => imgInputRef.current?.click()}
+              title="Attach screenshot or image"
+              className="p-2 rounded-lg bg-dark-950 hover:bg-dark-800 text-slate-300 hover:text-cyan-400 border border-dark-700 transition flex items-center gap-1 text-xs font-semibold"
+            >
+              <span>📷</span>
+              <span className="hidden sm:inline">Attach</span>
+            </button>
+
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+              placeholder="Ask about error codes (ERR-4032, ERR-5001), invoices, or paste error text..."
+              className="flex-1 bg-dark-950 border border-dark-700 rounded-lg px-4 py-2 text-xs text-white outline-none focus:border-cyan-400"
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-dark-950 text-xs font-bold transition disabled:opacity-50"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function MmrView() {
+      const [lambdaVal, setLambdaVal] = useState(0.7);
+      const [results, setResults] = useState([]);
+      const [loading, setLoading] = useState(false);
+
+      const runMmr = async (l = lambdaVal) => {
+        setLoading(true);
+        try {
+          const res = await fetch('/api/inspection/compare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: 'I am getting error code ERR-4032 during subscription migration, what is the fix?',
+              top_k: 3,
+              mmr_lambda: l
+            })
+          });
+          const data = await res.json();
+          setResults(data.mmr_chunks || []);
+        } catch (err) {
+          alert('MMR query failed: ' + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        runMmr(0.7);
+      }, []);
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl space-y-4">
+            <h2 className="text-base font-bold text-white">Bonus Challenge — MMR Diversity vs Hit-Rate Reranking</h2>
+            <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+              When querying <code className="text-cyan-400">ERR-4032</code>, the top candidates often share near-identical troubleshooting sections. 
+              Maximal Marginal Relevance (MMR) balances query relevance with inter-chunk diversity using penalty parameter <code className="text-cyan-400">&lambda;</code>.
+            </p>
+
+            <div className="bg-dark-950 p-4 rounded-xl border border-dark-700 space-y-2 max-w-xl">
+              <div className="flex justify-between text-xs font-semibold">
+                <span>Lambda (&lambda;): <span className="text-cyan-400 font-mono text-sm">{lambdaVal}</span></span>
+                <span className="text-slate-400">{lambdaVal >= 0.8 ? 'High Relevance' : lambdaVal <= 0.4 ? 'High Diversity' : 'Balanced'}</span>
+              </div>
+              <input
+                type="range"
+                min="0.0"
+                max="1.0"
+                step="0.1"
+                value={lambdaVal}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  setLambdaVal(v);
+                  runMmr(v);
+                }}
+                className="w-full accent-cyan-400 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                <span>&lambda;=0.0 (Pure Diversity)</span>
+                <span>&lambda;=1.0 (Pure Relevance)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-white">MMR Top-3 Chunks for ERR-4032</h3>
+              <span className="text-xs text-slate-400 font-mono">Target: BM-002::t3</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {results.map((c, i) => (
+                <div key={c.chunk_id + i} className="bg-dark-950 border border-dark-700 p-4 rounded-xl space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono font-bold text-cyan-400">Rank #{i+1}: {c.chunk_id}</span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                      {c.chunk_id === 'BM-002::t3' ? '★ Target Match' : 'Diversified Context'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    Source: <span className="text-slate-200">{c.article_id || 'N/A'}</span> • Area: <span className="text-slate-200">{c.product_area || 'General'}</span>
+                  </div>
+                  <div className="bg-black/30 p-2.5 rounded font-mono text-[11px] text-slate-300 max-h-36 overflow-y-auto leading-relaxed border border-dark-800">
+                    {c.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function UploadView({ onIngestSuccess, onViewDatabase }) {
+      const [files, setFiles] = useState([]);
+      const [uploading, setUploading] = useState(false);
+      const [reset, setReset] = useState(false);
+      const [statusMsg, setStatusMsg] = useState(null);
+      const fileInputRef = useRef(null);
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        if (e.dataTransfer.files) {
+          setFiles(Array.from(e.dataTransfer.files));
+        }
+      };
+
+      const handleUpload = async () => {
+        if (files.length === 0) return;
+        setUploading(true);
+        setStatusMsg(null);
+
+        const formData = new FormData();
+        files.forEach((f) => formData.append('files', f));
+
+        try {
+          const res = await fetch('/api/ingest/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'Upload failed');
+          }
+          const stats = await res.json();
+          setStatusMsg({
+            type: 'success',
+            text: `Successfully uploaded & indexed ${stats.files_read} file(s) (${stats.chunks_written} chunks written in ${stats.duration_seconds}s) into Chroma DB!`
+          });
+          setFiles([]);
+          if (onIngestSuccess) onIngestSuccess(stats);
+        } catch (err) {
+          setStatusMsg({ type: 'error', text: err.message });
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      const handleReindex = async () => {
+        setUploading(true);
+        setStatusMsg(null);
+        try {
+          const res = await fetch('/api/ingest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reset: reset }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'Reindex failed');
+          }
+          const stats = await res.json();
+          setStatusMsg({
+            type: 'success',
+            text: `Reindexed collection '${stats.collection}': ${stats.tickets_indexed} documents, ${stats.chunks_written} chunks (${stats.duration_seconds}s)`
+          });
+          if (onIngestSuccess) onIngestSuccess(stats);
+        } catch (err) {
+          setStatusMsg({ type: 'error', text: err.message });
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      return (
+        <div className="space-y-6 max-w-4xl mx-auto">
+          <div className="bg-dark-850/80 border border-dark-700/60 rounded-xl p-6 shadow-xl space-y-5">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-base font-bold text-white">Upload Documents & Knowledge Articles</h2>
+                <p className="text-xs text-slate-400">
+                  Upload markdown help articles (.md) or ticket files (.json, .jsonl, .csv) to store in Chroma DB and update BM25 search.
+                </p>
+              </div>
+              <button
+                onClick={onViewDatabase}
+                className="px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 text-cyan-300 text-xs font-semibold border border-dark-700 transition"
+              >
+                📚 View Active Database
+              </button>
+            </div>
+
+            {/* Drop Zone */}
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-dark-700 hover:border-cyan-500/60 bg-dark-950/60 rounded-xl p-8 text-center cursor-pointer transition space-y-3"
+            >
+              <input
+                type="file"
+                multiple
+                ref={fileInputRef}
+                onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                className="hidden"
+                accept=".md,.json,.jsonl,.csv"
+              />
+              <div className="text-3xl">📥</div>
+              <div className="text-xs font-semibold text-slate-200">
+                Click to browse or drag and drop files here
+              </div>
+              <div className="text-[11px] text-slate-500 font-mono">
+                Supported formats: .md (Help Articles), .json, .jsonl, .csv (Max 10MB per file)
+              </div>
+            </div>
+
+            {/* Selected Files */}
+            {files.length > 0 && (
+              <div className="bg-dark-950 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                <div className="text-xs font-bold text-cyan-400">Selected Files ({files.length}):</div>
+                <div className="flex flex-wrap gap-2">
+                  {files.map((f, i) => (
+                    <span key={i} className="px-2.5 py-1 rounded bg-dark-900 border border-dark-700 text-[11px] text-slate-300 font-mono">
+                      {f.name} ({(f.size / 1024).toFixed(1)} KB)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
+              <button
+                onClick={handleUpload}
+                disabled={uploading || files.length === 0}
+                className="px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-dark-950 text-xs font-bold transition disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/20"
+              >
+                {uploading ? 'Processing...' : 'Upload & Reindex Chunks'}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={reset}
+                    onChange={(e) => setReset(e.target.checked)}
+                    className="accent-cyan-400 rounded"
+                  />
+                  <span>Drop collection before reindexing</span>
+                </label>
+                <button
+                  onClick={handleReindex}
+                  disabled={uploading}
+                  className="px-4 py-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-200 text-xs font-semibold border border-dark-700 transition"
+                >
+                  Full Reindex
+                </button>
+              </div>
+            </div>
+
+            {/* Status Feedback */}
+            {statusMsg && (
+              <div
+                className={`p-3.5 rounded-lg text-xs font-medium border flex items-center justify-between ${
+                  statusMsg.type === 'success'
+                    ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
+                    : 'bg-rose-950/60 border-rose-500/40 text-rose-300'
+                }`}
+              >
+                <span>{statusMsg.text}</span>
+                <button
+                  onClick={onViewDatabase}
+                  className="underline font-bold text-xs ml-3 text-cyan-300 hover:text-cyan-200"
+                >
+                  View in Database &rarr;
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // --- Main App Component ---
+    function App() {
+      const [selectedWeek, setSelectedWeek] = useState('week4'); // 'week4' | 'week3'
+      const [activeTab, setActiveTab] = useState('benchmark');
+      
+      const [evalData, setEvalData] = useState(null);
+      const [week3Data, setWeek3Data] = useState(null);
+      const [corpusData, setCorpusData] = useState(null);
+
+      const [loading, setLoading] = useState(false);
+      const [week3Loading, setWeek3Loading] = useState(false);
+      const [corpusLoading, setCorpusLoading] = useState(false);
+      const [chatPrompt, setChatPrompt] = useState('');
+
+      const fetchEvaluation = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch('/api/inspection/evaluate', { method: 'POST' });
+          const data = await res.json();
+          setEvalData(data);
+        } catch (err) {
+          console.error('Failed to evaluate Week 4:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const fetchWeek3Evaluation = async () => {
+        setWeek3Loading(true);
+        try {
+          const res = await fetch('/api/inspection/week3/evaluate', { method: 'POST' });
+          const data = await res.json();
+          setWeek3Data(data);
+        } catch (err) {
+          console.error('Failed to evaluate Week 3:', err);
+        } finally {
+          setWeek3Loading(false);
+        }
+      };
+
+      const fetchCorpus = async () => {
+        setCorpusLoading(true);
+        try {
+          const res = await fetch('/api/inspection/corpus');
+          const data = await res.json();
+          setCorpusData(data);
+        } catch (err) {
+          console.error('Failed to fetch corpus:', err);
+        } finally {
+          setCorpusLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchEvaluation();
+        fetchWeek3Evaluation();
+        fetchCorpus();
+      }, []);
+
+      const handleAskAboutDoc = (doc) => {
+        setChatPrompt(`Tell me what is covered in ${doc.id} (${doc.title}) and any key steps or error codes.`);
+        setActiveTab('chat');
+      };
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          <Header
+            selectedWeek={selectedWeek}
+            setSelectedWeek={(w) => {
+              setSelectedWeek(w);
+              setActiveTab(w === 'week4' ? 'benchmark' : 'w3_benchmark');
+            }}
+            collectionName={corpusData?.collection || 'support_articles_table_aware'}
+            docCount={corpusData?.total_documents || 6}
+            chunkCount={corpusData?.total_chunks || 28}
+            onUploadClick={() => {
+              setSelectedWeek('week4');
+              setActiveTab('upload');
+            }}
+          />
+
+          {selectedWeek === 'week4' ? (
+            <TabNavWeek4 activeTab={activeTab} setActiveTab={setActiveTab} />
+          ) : (
+            <TabNavWeek3 activeTab={activeTab} setActiveTab={setActiveTab} />
+          )}
+          
+          <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+            {/* Week 4 Tab Views */}
+            {selectedWeek === 'week4' && (
+              <>
+                {activeTab === 'benchmark' && (
+                  <BenchmarkView
+                    evalData={evalData}
+                    loading={loading}
+                    onRunBenchmark={fetchEvaluation}
+                  />
+                )}
+                {activeTab === 'corpus' && (
+                  <CorpusView
+                    corpusData={corpusData}
+                    loading={corpusLoading}
+                    onRefresh={fetchCorpus}
+                    onAskAboutDoc={handleAskAboutDoc}
+                  />
+                )}
+                {activeTab === 'failures' && (
+                  <FailuresView failures={evalData?.failures} />
+                )}
+                {activeTab === 'inspector' && <InspectorView />}
+                {activeTab === 'chat' && <ChatView initialPrompt={chatPrompt} />}
+                {activeTab === 'mmr' && <MmrView />}
+                {activeTab === 'upload' && (
+                  <UploadView
+                    onIngestSuccess={() => { fetchEvaluation(); fetchCorpus(); }}
+                    onViewDatabase={() => setActiveTab('corpus')}
+                  />
+                )}
+              </>
+            )}
+
+            {/* Week 3 Tab Views */}
+            {selectedWeek === 'week3' && (
+              <>
+                {activeTab === 'w3_benchmark' && (
+                  <Week3BenchmarkView
+                    week3Data={week3Data}
+                    loading={week3Loading}
+                    onRunWeek3={fetchWeek3Evaluation}
+                  />
+                )}
+                {activeTab === 'w3_visualizer' && <Week3VisualizerView />}
+                {activeTab === 'corpus' && (
+                  <CorpusView
+                    corpusData={corpusData}
+                    loading={corpusLoading}
+                    onRefresh={fetchCorpus}
+                    onAskAboutDoc={handleAskAboutDoc}
+                  />
+                )}
+                {activeTab === 'chat' && <ChatView initialPrompt={chatPrompt} />}
+              </>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

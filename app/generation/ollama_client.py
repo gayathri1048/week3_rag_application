@@ -51,7 +51,7 @@ def get_available_models() -> list[str]:
 
 
 def _payload(
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     system_prompt: str,
     *,
     stream: bool,
@@ -72,7 +72,7 @@ def _payload(
 
 
 def stream_ollama_chat(
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     system_prompt: str,
 ) -> Iterator[str]:
     """Stream chat tokens from the local Ollama instance.
@@ -110,7 +110,7 @@ def stream_ollama_chat(
 
 
 def generate_ollama_chat(
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     system_prompt: str,
 ) -> str:
     """Blocking chat completion from the local Ollama instance."""
@@ -121,7 +121,7 @@ def generate_ollama_chat(
 
 
 def generate_ollama_json(
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     system_prompt: str,
     json_schema: dict[str, Any],
 ) -> dict[str, Any]:

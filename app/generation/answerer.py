@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Any, Iterator, Literal
 
 import anthropic
@@ -46,12 +47,19 @@ from .ollama_client import (
     is_ollama_available,
     stream_ollama_chat,
 )
+from .openai_client import (
+    OpenAIClientError,
+    generate_openai_chat,
+    generate_openai_json,
+    is_openai_available,
+    stream_openai_chat,
+)
 
 logger = logging.getLogger(__name__)
 
 HISTORY_TURNS = 8
 
-Provider = Literal["anthropic", "ollama", "fallback"]
+Provider = Literal["anthropic", "ollama", "openai", "fallback"]
 
 # Hand-written flat schema rather than `TriageResult.model_json_schema()`: pydantic
 # emits the enums as `$ref`/`$defs`, and Ollama's grammar compiler is happiest with
@@ -85,24 +93,18 @@ TRIAGE_JSON_INSTRUCTION = (
 
 
 def resolve_provider() -> Provider:
-    """Resolve `LLM_PROVIDER` to a backend that can actually serve a request.
-
-    A configured provider that is unreachable degrades rather than erroring:
-    Anthropic without a credential tries Ollama, and Ollama without a running
-    server drops to the templates. `fallback` is honoured literally so the
-    no-model path stays testable. Called per request — `is_ollama_available()`
-    is a 2s-timeout probe, so a dead server costs a request, not a hang.
-    """
+    """Resolve `LLM_PROVIDER` to a backend that can actually serve a request."""
     configured = get_settings().llm_provider
     if configured == "fallback":
         return "fallback"
     if configured == "anthropic" and is_configured():
         return "anthropic"
+    if configured == "openai" and is_openai_available():
+        return "openai"
+    if configured == "ollama" and is_ollama_available():
+        return "ollama"
     if is_ollama_available():
         return "ollama"
-    if configured == "anthropic":
-        # Let the SDK raise CredentialsError with its actionable message.
-        return "anthropic"
     return "fallback"
 
 
@@ -112,6 +114,8 @@ def active_model_name() -> str:
     provider = resolve_provider()
     if provider == "anthropic":
         return settings.claude_model
+    if provider == "openai":
+        return f"openai/{settings.openai_model}"
     if provider == "ollama":
         return f"ollama/{settings.ollama_model}"
     return "local-extractor (100% free)"
@@ -137,14 +141,32 @@ class Answerer:
         question: str,
         history: list[ChatMessage] | None = None,
         filters: TicketFilters | None = None,
+        article_filters: Any | None = None,
         top_k: int | None = None,
+        mode: str | None = None,
+        image_base64: str | None = None,
+        image_media_type: str | None = None,
+        image_name: str | None = None,
     ) -> ChatResponse:
-        """Answer a question over the ticket archive, with citations."""
-        chunks = self.retriever.retrieve(question, top_k=top_k, filters=filters)
+        """Answer a question over the ticket archive, with citations and optional multimodal image."""
+        search_query = question
+        final_question = question
+        if image_name:
+            err_match = re.search(r"(?:err[-_]?)(\d{4})", image_name, re.IGNORECASE)
+            if err_match and not re.search(r"ERR-\d{4}", question, re.IGNORECASE):
+                err_code = f"ERR-{err_match.group(1)}"
+                search_query = f"{question} {err_code}"
+                final_question = f"{question} {err_code} (from uploaded screenshot)"
+
+        chunks = self.retriever.retrieve(
+            search_query, top_k=top_k, filters=filters, article_filters=article_filters, mode=mode
+        )
         provider = self._provider()
 
         if provider == "anthropic":
-            messages = self._chat_messages(question, chunks, history)
+            messages = self._chat_messages(
+                final_question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
+            )
             response = self.client.beta.messages.create(
                 system=_cached_system(prompts.CHAT_SYSTEM),
                 messages=messages,
@@ -171,10 +193,31 @@ class Answerer:
                 },
             )
 
+        if provider == "openai":
+            try:
+                answer_text = generate_openai_chat(
+                    self._chat_messages(
+                        final_question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
+                    ),
+                    prompts.CHAT_SYSTEM,
+                )
+            except OpenAIClientError:
+                logger.exception("OpenAI/Groq chat failed — falling back to the local extractor")
+            else:
+                return ChatResponse(
+                    answer=answer_text,
+                    sources=chunks,
+                    model=f"openai/{self.settings.openai_model}",
+                    usage=_no_usage(),
+                )
+
         if provider == "ollama":
             try:
                 answer_text = generate_ollama_chat(
-                    self._chat_messages(question, chunks, history), prompts.CHAT_SYSTEM
+                    self._chat_messages(
+                        final_question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
+                    ),
+                    prompts.CHAT_SYSTEM,
                 )
             except OllamaError:
                 logger.exception("Ollama chat failed — falling back to the local extractor")
@@ -188,7 +231,7 @@ class Answerer:
 
         # Free local RAG extractor: no server, no key, no tokens.
         return ChatResponse(
-            answer=_build_fallback_answer(question, chunks),
+            answer=_build_fallback_answer(final_question, chunks),
             sources=chunks,
             model="local-extractor (100% free)",
             usage=_no_usage(),
@@ -199,15 +242,33 @@ class Answerer:
         question: str,
         history: list[ChatMessage] | None = None,
         filters: TicketFilters | None = None,
+        article_filters: Any | None = None,
         top_k: int | None = None,
+        mode: str | None = None,
+        image_base64: str | None = None,
+        image_media_type: str | None = None,
+        image_name: str | None = None,
     ) -> Iterator[str]:
         """Server-sent-event generator for the chat UI."""
-        chunks = self.retriever.retrieve(question, top_k=top_k, filters=filters)
+        search_query = question
+        final_question = question
+        if image_name:
+            err_match = re.search(r"(?:err[-_]?)(\d{4})", image_name, re.IGNORECASE)
+            if err_match and not re.search(r"ERR-\d{4}", question, re.IGNORECASE):
+                err_code = f"ERR-{err_match.group(1)}"
+                search_query = f"{question} {err_code}"
+                final_question = f"{question} {err_code} (from uploaded screenshot)"
+
+        chunks = self.retriever.retrieve(
+            search_query, top_k=top_k, filters=filters, article_filters=article_filters, mode=mode
+        )
         yield _sse("sources", [c.model_dump(mode="json") for c in chunks])
         provider = self._provider()
 
         if provider == "anthropic":
-            messages = self._chat_messages(question, chunks, history)
+            messages = self._chat_messages(
+                final_question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
+            )
             try:
                 with self.client.beta.messages.stream(
                     system=_cached_system(prompts.CHAT_SYSTEM),
@@ -237,9 +298,26 @@ class Answerer:
                 yield _sse("error", {"message": f"Generation failed: {exc}"})
             return
 
+        if provider == "openai":
+            for token in stream_openai_chat(
+                self._chat_messages(
+                    question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
+                ),
+                prompts.CHAT_SYSTEM,
+            ):
+                yield _sse("delta", {"text": token})
+            yield _sse(
+                "done",
+                {"model": f"openai/{self.settings.openai_model}", "output_tokens": 0},
+            )
+            return
+
         if provider == "ollama":
             for token in stream_ollama_chat(
-                self._chat_messages(question, chunks, history), prompts.CHAT_SYSTEM
+                self._chat_messages(
+                    question, chunks, history, image_base64=image_base64, image_media_type=image_media_type
+                ),
+                prompts.CHAT_SYSTEM,
             ):
                 yield _sse("delta", {"text": token})
             yield _sse(
@@ -257,19 +335,33 @@ class Answerer:
         question: str,
         chunks: list[RetrievedChunk],
         history: list[ChatMessage] | None,
+        image_base64: str | None = None,
+        image_media_type: str | None = None,
     ) -> list[dict[str, Any]]:
         messages: list[dict[str, Any]] = [
             {"role": message.role, "content": message.content}
             for message in (history or [])[-HISTORY_TURNS:]
         ]
-        messages.append(
-            {
-                "role": "user",
-                "content": prompts.CHAT_USER_TEMPLATE.format(
-                    context=format_context(chunks), question=question
-                ),
-            }
+        user_text = prompts.CHAT_USER_TEMPLATE.format(
+            context=format_context(chunks), question=question
         )
+        if image_base64 and self._provider() == "anthropic":
+            content_blocks = [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": image_media_type or "image/png",
+                        "data": image_base64,
+                    },
+                },
+                {"type": "text", "text": user_text},
+            ]
+            messages.append({"role": "user", "content": content_blocks})
+        elif image_base64 and (self._provider() in {"ollama", "openai"}):
+            messages.append({"role": "user", "content": user_text, "images": [image_base64]})
+        else:
+            messages.append({"role": "user", "content": user_text})
         return messages
 
     # ---------------------------------------------------------------- triage
@@ -300,6 +392,23 @@ class Answerer:
                 similar_tickets=similar,
                 model=getattr(response, "model", self.settings.claude_model),
             )
+
+        if provider == "openai":
+            try:
+                raw = generate_openai_json(
+                    [{"role": "user", "content": user_message}],
+                    prompts.TRIAGE_SYSTEM + TRIAGE_JSON_INSTRUCTION,
+                    TRIAGE_JSON_SCHEMA,
+                )
+                result = TriageResult.model_validate(raw)
+            except (OpenAIClientError, ValidationError):
+                logger.exception("OpenAI triage failed — falling back to local heuristic")
+            else:
+                return TriageResponse(
+                    result=result,
+                    similar_tickets=similar,
+                    model=f"openai/{self.settings.openai_model}",
+                )
 
         if provider == "ollama":
             try:
@@ -353,6 +462,20 @@ class Answerer:
                 model=getattr(response, "model", self.settings.claude_model),
             )
 
+        if provider == "openai":
+            try:
+                draft_text = generate_openai_chat(
+                    [{"role": "user", "content": user_message}], system_prompt
+                )
+            except OpenAIClientError:
+                logger.exception("OpenAI draft failed — falling back to local drafter")
+            else:
+                return DraftReplyResponse(
+                    draft=draft_text,
+                    sources=similar,
+                    model=f"openai/{self.settings.openai_model}",
+                )
+
         if provider == "ollama":
             try:
                 draft_text = generate_ollama_chat(
@@ -377,12 +500,23 @@ class Answerer:
 
 def _build_fallback_answer(question: str, chunks: list[RetrievedChunk]) -> str:
     """A structured, grounded answer assembled from retrieved chunks — no model."""
-    if not chunks:
-        return "No relevant support tickets were found in the archive matching your question."
+    max_dense = max((c.dense_score or c.score or 0.0) for c in chunks) if chunks else 0.0
 
-    lines = [f"Based on **{len(chunks)}** relevant support ticket(s) in your index:\n"]
+    if not chunks or max_dense < 0.25:
+        return (
+            f"❌ **No matching support documentation found** for: *\"{question}\"*\n\n"
+            "The indexed knowledge base is focused on billing migration and customer support topics, including:\n"
+            "• **Error Codes**: `ERR-4032`, `ERR-4001`, `ERR-4010`, `ERR-4040`, `ERR-4030`\n"
+            "• **Invoices & Credits**: Cutover rules, credit expiration, and adjustments\n"
+            "• **Webhooks & APIs**: Header replacements (`Authorization: Bearer`), secret rotation\n"
+            "• **SSO & Permissions**: SAML attribute configuration and user role mapping\n\n"
+            "💡 *Tip: To enable general conversational Q&A on any topic, start local Ollama (`ollama run llama3.2`) or add an Anthropic API key in `.env`.*"
+        )
+
+    lines = [f"Based on **{len(chunks)}** relevant support article(s) in your index:\n"]
     for idx, chunk in enumerate(chunks, 1):
-        lines.append(f"**[{idx}] {chunk.subject}** (`{chunk.ticket_id}`)")
+        title = chunk.subject or chunk.ticket_id
+        lines.append(f"**[{idx}] {title}** (`{chunk.chunk_id}`)")
         snippet = chunk.text.replace("\n", " ").strip()
         lines.append(f"> {snippet}\n")
 

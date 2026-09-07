@@ -18,12 +18,17 @@ class Settings(BaseSettings):
     )
 
     # --- LLM Provider ---
-    # Default is 'ollama' for 100% free local AI without consuming API tokens
-    llm_provider: Literal["ollama", "anthropic", "fallback"] = "ollama"
+    # Options: 'ollama' (local), 'openai' (Groq/OpenRouter/OpenAI cloud URL), 'anthropic' (Claude), 'fallback'
+    llm_provider: Literal["ollama", "anthropic", "openai", "fallback"] = "openai"
 
     # --- Ollama (100% Free Local AI) ---
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
+
+    # --- OpenAI-Compatible Cloud Endpoint (Groq / OpenRouter / OpenAI / vLLM) ---
+    openai_base_url: str = "https://api.groq.com/openai/v1"
+    openai_api_key: str | None = None
+    openai_model: str = "openai/gpt-oss-120b"
 
     # --- Anthropic ---
     anthropic_api_key: str | None = None
@@ -36,6 +41,9 @@ class Settings(BaseSettings):
     collection_name: str = "support_tickets"
     top_k: int = 6
     min_relevance: float = Field(default=0.25, ge=0.0, le=1.0)
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    reranker_candidate_k: int = 15
+    reranker_enabled: bool = True
 
     # --- Ingestion ---
     documents_dir: Path = BACKEND_ROOT / "documents"

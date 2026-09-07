@@ -5,3 +5,4 @@ chroma_db/
 .env
 .DS_Store
 scripts/eval_dump.json
+*.ses

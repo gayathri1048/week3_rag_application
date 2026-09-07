@@ -1,0 +1,12 @@
+[
+  {
+    "id": "TICKET-901",
+    "subject": "Unable to access Enterprise SSO after UBP migration",
+    "body": "Customer says they received error ERR-5003 regarding tax profile and VAT mismatch on their UK subsidiary.",
+    "category": "billing",
+    "priority": "high",
+    "status": "open",
+    "product": "UBP-Enterprise",
+    "resolution": "Customer uploaded VAT certificate; Support ran ledger-sync."
+  }
+]

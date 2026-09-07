@@ -1,0 +1,813 @@
+{
+  "baseline": {
+    "hit_rate_at_3": "11/12 (91.7%)",
+    "p50_latency_ms": 122.16,
+    "failures": [
+      {
+        "id": "Q10",
+        "question": "What happens to draft invoices during the billing migration cutover?",
+        "target_chunk_id": "BM-003::t1",
+        "label": "R",
+        "retrieved": [
+          "BM-003::t0",
+          "BM-003::t2",
+          "BM-001::t3"
+        ],
+        "evidence": "Retrieval returned ['BM-003::t0', 'BM-003::t2', 'BM-001::t3'] (top-1 BM-003::t0), missing target BM-003::t1 which contains the required answer."
+      }
+    ],
+    "results": [
+      {
+        "id": "Q01",
+        "question": "I am getting error code ERR-4032 during subscription migration, what is the fix?",
+        "correct_chunk_id": "BM-002::t3",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 2,
+        "retrieved_chunk_ids": [
+          "BM-006::t1",
+          "BM-002::t3",
+          "BM-002::t4"
+        ],
+        "scores": [
+          0.624923,
+          0.540964,
+          0.486301
+        ],
+        "p50_ms": 135.12
+      },
+      {
+        "id": "Q02",
+        "question": "Customer received ERR-4001 when card re-tokenisation failed. What action is required?",
+        "correct_chunk_id": "BM-002::t1",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-002::t1",
+          "BM-002::t4",
+          "BM-002::t3"
+        ],
+        "scores": [
+          0.661949,
+          0.565009,
+          0.441615
+        ],
+        "p50_ms": 139.49
+      },
+      {
+        "id": "Q03",
+        "question": "How do I resolve ERR-4010 malformed legacy invoice missing tax_code?",
+        "correct_chunk_id": "BM-002::t1",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-002::t1",
+          "BM-001::t3",
+          "BM-003::t0"
+        ],
+        "scores": [
+          0.539816,
+          0.51013,
+          0.468357
+        ],
+        "p50_ms": 155.05
+      },
+      {
+        "id": "Q04",
+        "question": "What should we do for ERR-4040 webhook signature verification failure in Migration Audit Log?",
+        "correct_chunk_id": "BM-004::t3",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-004::t3",
+          "BM-004::t2",
+          "BM-002::t3"
+        ],
+        "scores": [
+          0.607962,
+          0.603388,
+          0.537653
+        ],
+        "p50_ms": 307.48
+      },
+      {
+        "id": "Q05",
+        "question": "Account is locked during cutover window showing ERR-4030, how can admin unlock it?",
+        "correct_chunk_id": "BM-005::t3",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-005::t3",
+          "BM-005::t2",
+          "BM-005::t1"
+        ],
+        "scores": [
+          0.598307,
+          0.530666,
+          0.410545
+        ],
+        "p50_ms": 132.8
+      },
+      {
+        "id": "Q06",
+        "question": "How are custom plans identified by codes beginning with CUSTOM- or ENT- handled in migration?",
+        "correct_chunk_id": "BM-006::t0",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-006::t0",
+          "BM-006::t3",
+          "BM-006::t4"
+        ],
+        "scores": [
+          0.557163,
+          0.415629,
+          0.39575
+        ],
+        "p50_ms": 122.04
+      },
+      {
+        "id": "Q07",
+        "question": "When does Phase 2 Business plan migration start and what action is required from customers?",
+        "correct_chunk_id": "BM-001::t1",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 2,
+        "retrieved_chunk_ids": [
+          "BM-006::t3",
+          "BM-001::t1",
+          "BM-006::t2"
+        ],
+        "scores": [
+          0.615146,
+          0.58198,
+          0.574662
+        ],
+        "p50_ms": 122.29
+      },
+      {
+        "id": "Q08",
+        "question": "What is the expiration timeframe for unused migration credits?",
+        "correct_chunk_id": "BM-003::t2",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-003::t2",
+          "BM-003::t1",
+          "BM-006::t3"
+        ],
+        "scores": [
+          0.635,
+          0.564652,
+          0.479565
+        ],
+        "p50_ms": 110.83
+      },
+      {
+        "id": "Q09",
+        "question": "What HTTP authentication header is required for UBP API requests instead of X-Billing-Token?",
+        "correct_chunk_id": "BM-004::t2",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 3,
+        "retrieved_chunk_ids": [
+          "BM-004::t3",
+          "BM-004::t0",
+          "BM-004::t2"
+        ],
+        "scores": [
+          0.663467,
+          0.509317,
+          0.426602
+        ],
+        "p50_ms": 97.01
+      },
+      {
+        "id": "Q10",
+        "question": "What happens to draft invoices during the billing migration cutover?",
+        "correct_chunk_id": "BM-003::t1",
+        "has_exact_token": false,
+        "hit": false,
+        "rank": null,
+        "retrieved_chunk_ids": [
+          "BM-003::t0",
+          "BM-003::t2",
+          "BM-001::t3"
+        ],
+        "scores": [
+          0.597595,
+          0.592718,
+          0.59098
+        ],
+        "p50_ms": 105.29
+      },
+      {
+        "id": "Q11",
+        "question": "Which SAML attribute must be added to IdP configuration to fix billing permissions post-migration?",
+        "correct_chunk_id": "BM-005::t2",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-005::t2",
+          "BM-005::t1",
+          "BM-006::t3"
+        ],
+        "scores": [
+          0.681563,
+          0.673289,
+          0.482134
+        ],
+        "p50_ms": 89.44
+      },
+      {
+        "id": "Q12",
+        "question": "What line items should enterprise custom plan customers verify on their first UBP invoice?",
+        "correct_chunk_id": "BM-006::t4",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 2,
+        "retrieved_chunk_ids": [
+          "BM-006::t3",
+          "BM-006::t4",
+          "BM-006::t2"
+        ],
+        "scores": [
+          0.603073,
+          0.602325,
+          0.525928
+        ],
+        "p50_ms": 88.47
+      }
+    ]
+  },
+  "hybrid": {
+    "hit_rate_at_3": "12/12 (100.0%)",
+    "p50_latency_ms": 89.79,
+    "results": [
+      {
+        "id": "Q01",
+        "question": "I am getting error code ERR-4032 during subscription migration, what is the fix?",
+        "correct_chunk_id": "BM-002::t3",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-002::t3",
+          "BM-006::t1",
+          "BM-002::t4"
+        ],
+        "dense_ranks": [
+          2,
+          1,
+          3
+        ],
+        "bm25_ranks": [
+          1,
+          4,
+          2
+        ],
+        "rrf_scores": [
+          0.032522,
+          0.032018,
+          0.032002
+        ],
+        "p50_ms": 101.51
+      },
+      {
+        "id": "Q02",
+        "question": "Customer received ERR-4001 when card re-tokenisation failed. What action is required?",
+        "correct_chunk_id": "BM-002::t1",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-002::t1",
+          "BM-002::t4",
+          "BM-002::t3"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          3
+        ],
+        "bm25_ranks": [
+          1,
+          9,
+          8
+        ],
+        "rrf_scores": [
+          0.032787,
+          0.030622,
+          0.030579
+        ],
+        "p50_ms": 95.15
+      },
+      {
+        "id": "Q03",
+        "question": "How do I resolve ERR-4010 malformed legacy invoice missing tax_code?",
+        "correct_chunk_id": "BM-002::t1",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-002::t1",
+          "BM-003::t0",
+          "BM-001::t3"
+        ],
+        "dense_ranks": [
+          1,
+          3,
+          2
+        ],
+        "bm25_ranks": [
+          1,
+          2,
+          11
+        ],
+        "rrf_scores": [
+          0.032787,
+          0.032002,
+          0.030214
+        ],
+        "p50_ms": 93.65
+      },
+      {
+        "id": "Q04",
+        "question": "What should we do for ERR-4040 webhook signature verification failure in Migration Audit Log?",
+        "correct_chunk_id": "BM-004::t3",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-004::t3",
+          "BM-004::t2",
+          "BM-002::t3"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          3
+        ],
+        "bm25_ranks": [
+          2,
+          1,
+          6
+        ],
+        "rrf_scores": [
+          0.032522,
+          0.032522,
+          0.031025
+        ],
+        "p50_ms": 96.03
+      },
+      {
+        "id": "Q05",
+        "question": "Account is locked during cutover window showing ERR-4030, how can admin unlock it?",
+        "correct_chunk_id": "BM-005::t3",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-005::t3",
+          "BM-005::t2",
+          "BM-002::t2"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          4
+        ],
+        "bm25_ranks": [
+          3,
+          2,
+          1
+        ],
+        "rrf_scores": [
+          0.032266,
+          0.032258,
+          0.032018
+        ],
+        "p50_ms": 88.92
+      },
+      {
+        "id": "Q06",
+        "question": "How are custom plans identified by codes beginning with CUSTOM- or ENT- handled in migration?",
+        "correct_chunk_id": "BM-006::t0",
+        "has_exact_token": true,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-006::t0",
+          "BM-006::t3",
+          "BM-006::t1"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          4
+        ],
+        "bm25_ranks": [
+          1,
+          2,
+          5
+        ],
+        "rrf_scores": [
+          0.032787,
+          0.032258,
+          0.03101
+        ],
+        "p50_ms": 109.71
+      },
+      {
+        "id": "Q07",
+        "question": "When does Phase 2 Business plan migration start and what action is required from customers?",
+        "correct_chunk_id": "BM-001::t1",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-001::t1",
+          "BM-006::t1",
+          "BM-006::t2"
+        ],
+        "dense_ranks": [
+          2,
+          4,
+          3
+        ],
+        "bm25_ranks": [
+          1,
+          3,
+          6
+        ],
+        "rrf_scores": [
+          0.032522,
+          0.031498,
+          0.031025
+        ],
+        "p50_ms": 90.4
+      },
+      {
+        "id": "Q08",
+        "question": "What is the expiration timeframe for unused migration credits?",
+        "correct_chunk_id": "BM-003::t2",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-003::t2",
+          "BM-001::t2",
+          "BM-003::t1"
+        ],
+        "dense_ranks": [
+          1,
+          4,
+          2
+        ],
+        "bm25_ranks": [
+          1,
+          2,
+          8
+        ],
+        "rrf_scores": [
+          0.032787,
+          0.031754,
+          0.030835
+        ],
+        "p50_ms": 84.89
+      },
+      {
+        "id": "Q09",
+        "question": "What HTTP authentication header is required for UBP API requests instead of X-Billing-Token?",
+        "correct_chunk_id": "BM-004::t2",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 3,
+        "retrieved_chunk_ids": [
+          "BM-004::t3",
+          "BM-004::t0",
+          "BM-004::t2"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          3
+        ],
+        "bm25_ranks": [
+          1,
+          3,
+          2
+        ],
+        "rrf_scores": [
+          0.032787,
+          0.032002,
+          0.032002
+        ],
+        "p50_ms": 83.26
+      },
+      {
+        "id": "Q10",
+        "question": "What happens to draft invoices during the billing migration cutover?",
+        "correct_chunk_id": "BM-003::t1",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-003::t1",
+          "BM-001::t3",
+          "BM-001::t2"
+        ],
+        "dense_ranks": [
+          5,
+          3,
+          4
+        ],
+        "bm25_ranks": [
+          1,
+          4,
+          3
+        ],
+        "rrf_scores": [
+          0.031778,
+          0.031498,
+          0.031498
+        ],
+        "p50_ms": 82.85
+      },
+      {
+        "id": "Q11",
+        "question": "Which SAML attribute must be added to IdP configuration to fix billing permissions post-migration?",
+        "correct_chunk_id": "BM-005::t2",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 1,
+        "retrieved_chunk_ids": [
+          "BM-005::t2",
+          "BM-005::t1",
+          "BM-005::t3"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          5
+        ],
+        "bm25_ranks": [
+          2,
+          1,
+          5
+        ],
+        "rrf_scores": [
+          0.032522,
+          0.032522,
+          0.030769
+        ],
+        "p50_ms": 82.16
+      },
+      {
+        "id": "Q12",
+        "question": "What line items should enterprise custom plan customers verify on their first UBP invoice?",
+        "correct_chunk_id": "BM-006::t4",
+        "has_exact_token": false,
+        "hit": true,
+        "rank": 2,
+        "retrieved_chunk_ids": [
+          "BM-006::t3",
+          "BM-006::t4",
+          "BM-001::t1"
+        ],
+        "dense_ranks": [
+          1,
+          2,
+          4
+        ],
+        "bm25_ranks": [
+          1,
+          2,
+          3
+        ],
+        "rrf_scores": [
+          0.032787,
+          0.032258,
+          0.031498
+        ],
+        "p50_ms": 89.17
+      }
+    ]
+  },
+  "delta": {
+    "hit_rate_before": "11/12",
+    "hit_rate_after": "12/12",
+    "p50_before_ms": 122.16,
+    "p50_after_ms": 89.79,
+    "latency_overhead_ms": -32.37,
+    "fixed_count": 1,
+    "unfixed_count": 0
+  },
+  "comparison_table": [
+    {
+      "id": "Q01",
+      "question": "I am getting error code ERR-4032 during subscription migration, what is the fix?",
+      "target": "BM-002::t3",
+      "exact_token": true,
+      "baseline_hit": true,
+      "baseline_rank": 2,
+      "baseline_p50": 135.12,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 101.51,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q02",
+      "question": "Customer received ERR-4001 when card re-tokenisation failed. What action is required?",
+      "target": "BM-002::t1",
+      "exact_token": true,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 139.49,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 95.15,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q03",
+      "question": "How do I resolve ERR-4010 malformed legacy invoice missing tax_code?",
+      "target": "BM-002::t1",
+      "exact_token": true,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 155.05,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 93.65,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q04",
+      "question": "What should we do for ERR-4040 webhook signature verification failure in Migration Audit Log?",
+      "target": "BM-004::t3",
+      "exact_token": true,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 307.48,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 96.03,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q05",
+      "question": "Account is locked during cutover window showing ERR-4030, how can admin unlock it?",
+      "target": "BM-005::t3",
+      "exact_token": true,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 132.8,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 88.92,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q06",
+      "question": "How are custom plans identified by codes beginning with CUSTOM- or ENT- handled in migration?",
+      "target": "BM-006::t0",
+      "exact_token": true,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 122.04,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 109.71,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q07",
+      "question": "When does Phase 2 Business plan migration start and what action is required from customers?",
+      "target": "BM-001::t1",
+      "exact_token": false,
+      "baseline_hit": true,
+      "baseline_rank": 2,
+      "baseline_p50": 122.29,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 90.4,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q08",
+      "question": "What is the expiration timeframe for unused migration credits?",
+      "target": "BM-003::t2",
+      "exact_token": false,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 110.83,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 84.89,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q09",
+      "question": "What HTTP authentication header is required for UBP API requests instead of X-Billing-Token?",
+      "target": "BM-004::t2",
+      "exact_token": false,
+      "baseline_hit": true,
+      "baseline_rank": 3,
+      "baseline_p50": 97.01,
+      "hybrid_hit": true,
+      "hybrid_rank": 3,
+      "hybrid_p50": 83.26,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q10",
+      "question": "What happens to draft invoices during the billing migration cutover?",
+      "target": "BM-003::t1",
+      "exact_token": false,
+      "baseline_hit": false,
+      "baseline_rank": "-",
+      "baseline_p50": 105.29,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 82.85,
+      "status": "FIXED"
+    },
+    {
+      "id": "Q11",
+      "question": "Which SAML attribute must be added to IdP configuration to fix billing permissions post-migration?",
+      "target": "BM-005::t2",
+      "exact_token": false,
+      "baseline_hit": true,
+      "baseline_rank": 1,
+      "baseline_p50": 89.44,
+      "hybrid_hit": true,
+      "hybrid_rank": 1,
+      "hybrid_p50": 82.16,
+      "status": "PASSED_BOTH"
+    },
+    {
+      "id": "Q12",
+      "question": "What line items should enterprise custom plan customers verify on their first UBP invoice?",
+      "target": "BM-006::t4",
+      "exact_token": false,
+      "baseline_hit": true,
+      "baseline_rank": 2,
+      "baseline_p50": 88.47,
+      "hybrid_hit": true,
+      "hybrid_rank": 2,
+      "hybrid_p50": 89.17,
+      "status": "PASSED_BOTH"
+    }
+  ],
+  "mmr_bonus": [
+    {
+      "lambda": 1.0,
+      "top_3": [
+        "BM-002::t3",
+        "BM-006::t1",
+        "BM-002::t4"
+      ],
+      "target_hit": true,
+      "diversity": 0.7765
+    },
+    {
+      "lambda": 0.7,
+      "top_3": [
+        "BM-002::t3",
+        "BM-006::t1",
+        "BM-002::t4"
+      ],
+      "target_hit": true,
+      "diversity": 0.7765
+    },
+    {
+      "lambda": 0.5,
+      "top_3": [
+        "BM-002::t3",
+        "BM-006::t1",
+        "BM-005::t1"
+      ],
+      "target_hit": true,
+      "diversity": 0.8288
+    },
+    {
+      "lambda": 0.3,
+      "top_3": [
+        "BM-002::t3",
+        "BM-005::t1",
+        "BM-006::t1"
+      ],
+      "target_hit": true,
+      "diversity": 0.8288
+    }
+  ]
+}

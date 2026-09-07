@@ -7,11 +7,13 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import __version__
 from .api.routes import api_router
@@ -19,6 +21,8 @@ from .config import get_settings
 from .dependencies import get_vector_store
 
 logger = logging.getLogger(__name__)
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 @asynccontextmanager
@@ -70,6 +74,9 @@ app.add_middleware(
 
 app.include_router(api_router, prefix="/api")
 
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
@@ -82,7 +89,11 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 @app.get("/", include_in_schema=False)
-def root() -> dict[str, str]:
+@app.get("/ui", include_in_schema=False)
+def root_ui():
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file))
     return {
         "name": "Customer Support Tickets RAG API",
         "version": __version__,
