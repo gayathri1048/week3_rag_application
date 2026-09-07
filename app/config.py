@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     # --- Langfuse Observability ---
     langfuse_public_key: str | None = None
     langfuse_secret_key: str | None = None
+    langfuse_base_url: str | None = None
     langfuse_host: str = "https://cloud.langfuse.com"
     langfuse_enabled: bool = True
 

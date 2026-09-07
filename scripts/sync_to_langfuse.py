@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync customer support RAG traces to Langfuse.
+"""Sync customer support RAG traces to Langfuse (Langfuse SDK v4 compatible).
 
 Usage:
   python scripts/sync_to_langfuse.py [--dry-run]
@@ -23,10 +23,11 @@ TRACES_FILE = PROJECT_ROOT / "traces.jsonl"
 
 def sync_traces(dry_run: bool = False):
     settings = get_settings()
+    host_url = settings.langfuse_base_url or settings.langfuse_host
     print("=" * 80)
     print("LANGFUSE TRACE SYNC")
     print("=" * 80)
-    print(f"Langfuse Host: {settings.langfuse_host}")
+    print(f"Langfuse Host: {host_url}")
     print(f"Configured: {is_langfuse_configured()}")
     print(f"Dry Run: {dry_run}")
     print(f"Traces File: {TRACES_FILE}")
@@ -45,48 +46,48 @@ def sync_traces(dry_run: bool = False):
         for idx, t in enumerate(traces[:5], 1):
             print(f" [{idx:02d}] {t['trace_id']}: \"{t['user_query']}\" -> {t['model']}")
         print(f" ... and {len(traces) - 5} more traces.")
-        print("\nDry run completed successfully. Set your LANGFUSE keys in .env to push live.")
+        print("\nDry run completed successfully.")
         return
 
     client = get_langfuse_client()
     if not client:
         print("\n❌ Error: Langfuse is not configured.")
-        print("Please set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in your .env file:")
-        print("  LANGFUSE_PUBLIC_KEY=pk-lf-...")
-        print("  LANGFUSE_SECRET_KEY=sk-lf-...")
-        print("  LANGFUSE_HOST=https://cloud.langfuse.com")
+        print("Please set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in your .env file.")
         sys.exit(1)
 
     print("Uploading traces to Langfuse...")
     success_count = 0
     for idx, t in enumerate(traces, 1):
         try:
-            # 1. Main Trace
-            trace = client.trace(
-                id=t.get("trace_id"),
+            # 1. Start root RAG chain span
+            root = client.start_observation(
                 name="customer_support_rag_trace",
+                as_type="chain",
                 input={"question": t.get("user_query")},
-                output={"answer": t.get("raw_output")},
                 metadata={
+                    "trace_id": t.get("trace_id"),
                     "prompt_version": t.get("prompt_template_version"),
                     "timestamp": t.get("timestamp"),
                     "open_coding_observation": t.get("open_coding_observation"),
+                    "tags": ["week5-eval", "customer-support-rag", "seeded-pool"],
                 },
-                tags=["week5-eval", "customer-support-rag", "seeded-pool"],
             )
 
-            # 2. Retrieval Span
+            # 2. Add retrieval span
             chunks = t.get("retrieved_chunks", [])
-            trace.span(
-                name="vector_retrieval",
+            retriever = root.start_observation(
+                name="knowledge_retrieval",
+                as_type="retriever",
                 input={"query": t.get("user_query")},
                 output={"chunks": chunks},
                 metadata={"top_k": len(chunks)},
             )
+            retriever.end()
 
-            # 3. Generation Span
-            trace.generation(
+            # 3. Add generation span
+            gen = root.start_observation(
                 name="rag_generation",
+                as_type="generation",
                 model=t.get("model", "claude-3-5-sonnet-20241022"),
                 model_parameters=t.get("model_params", {"temperature": 0.0}),
                 input=[
@@ -95,6 +96,10 @@ def sync_traces(dry_run: bool = False):
                 ],
                 output=t.get("raw_output", ""),
             )
+            gen.end()
+
+            root.update(output={"answer": t.get("raw_output", "")})
+            root.end()
 
             success_count += 1
             if idx % 10 == 0 or idx == len(traces):
@@ -106,7 +111,7 @@ def sync_traces(dry_run: bool = False):
     print("Flushing events to Langfuse...")
     client.flush()
     print(f"\n✅ Successfully synced {success_count}/{len(traces)} traces to Langfuse!")
-    print(f"View your traces at: {settings.langfuse_host}")
+    print(f"View your live traces at: {host_url}")
 
 
 def main():

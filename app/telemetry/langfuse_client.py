@@ -1,4 +1,4 @@
-"""Langfuse observability client for customer support RAG.
+"""Langfuse observability client for customer support RAG (Langfuse SDK v4 compatible).
 
 Provides thread-safe, non-blocking telemetry logging for user queries,
 retrieval spans, and LLM generations.
@@ -34,15 +34,16 @@ def get_langfuse_client() -> Any | None:
         return None
 
     settings = get_settings()
+    host_url = settings.langfuse_base_url or settings.langfuse_host
     try:
         from langfuse import Langfuse
 
         _langfuse_instance = Langfuse(
             public_key=settings.langfuse_public_key,
             secret_key=settings.langfuse_secret_key,
-            host=settings.langfuse_host,
+            host=host_url,
         )
-        logger.info("Langfuse observability client initialized successfully (host: %s)", settings.langfuse_host)
+        logger.info("Langfuse observability client initialized successfully (host: %s)", host_url)
         return _langfuse_instance
     except Exception as exc:
         logger.warning("Failed to initialize Langfuse client: %s", exc)
@@ -82,42 +83,50 @@ def log_rag_trace(
                 c_dict = {"text": str(c)}
             chunks_payload.append(c_dict)
 
-        # 1. Create main Langfuse trace
-        trace = client.trace(
-            id=trace_id,
+        # 1. Start root RAG chain span
+        root_span = client.start_observation(
             name="customer_support_rag",
+            as_type="chain",
             input={"question": query},
-            output={"answer": answer},
             metadata={
+                "trace_id": trace_id,
                 "prompt_version": prompt_version,
                 "retrieved_chunk_count": len(chunks_payload),
+                "tags": tags or ["rag", "customer-support-rag", "week5-eval"],
                 **(metadata or {}),
             },
-            tags=tags or ["rag", "week5-eval"],
         )
 
         # 2. Add retrieval span
-        trace.span(
+        retriever_span = root_span.start_observation(
             name="knowledge_retrieval",
+            as_type="retriever",
             input={"query": query},
             output={"chunks": chunks_payload},
             metadata={"top_k": len(chunks_payload)},
         )
+        retriever_span.end()
 
         # 3. Add generation span
-        trace.generation(
+        gen_span = root_span.start_observation(
             name="rag_generation",
+            as_type="generation",
             model=model,
             model_parameters=model_params or {"temperature": 0.0},
             input=[
-                {"role": "system", "content": f"UBP Support Migration Assistant ({prompt_version})"},
+                {"role": "system", "content": f"UBP Support Assistant ({prompt_version})"},
                 {"role": "user", "content": query},
             ],
             output=answer,
             metadata={"latency_ms": latency_ms},
         )
+        gen_span.end()
 
-        return trace
+        # Complete root observation
+        root_span.update(output={"answer": answer})
+        root_span.end()
+
+        return root_span
     except Exception as exc:
         logger.warning("Could not push trace %s to Langfuse: %s", trace_id, exc)
         return None
