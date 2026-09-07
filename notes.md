@@ -77,7 +77,7 @@
 - **Target Intervention**: Implement BM25 lexical keyword boosting for document archive queries (boosting terms like `legacy`, `PDF`, `archive`, `INV-`) over generic error code documents in the hybrid retriever.
 - **Expected Numerical Delta**: Drops the occurrence of this mode from **15.0% (3/20)** to **0.0% (0/20)** across a newly drawn 20-trace seeded random sample.
 - **Date**: 2026-09-07
-- **Git Commit Hash**: `[COMMITTED_BELOW]`
+- **Git Commit Hash**: `3794a7f8099f6c795c9f52ffdca36d2f006458ee` (`3794a7f`)
 
 ---
 
