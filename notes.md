@@ -77,7 +77,7 @@
 - **Target Intervention**: Implement strict negative-constraint prompt guarding and policy verification asserting that Tier-1 support has zero authorization to grant manual credits or dispute refunds without Fraud/Executive sign-off.
 - **Expected Numerical Delta**: Drops the occurrence of this failure mode from **35.0% (7/20)** to **under 5.0% (<1/20)** across a newly drawn 20-trace seeded random sample.
 - **Date**: 2026-09-07
-- **Git Commit Hash**: `[COMMITTED_BELOW]`
+- **Git Commit Hash**: `7131b77fdd3b73efadfb53a6462345d62001e87b` (`7131b77`)
 
 ---
 
