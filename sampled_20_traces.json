@@ -1,0 +1,502 @@
+[
+  {
+    "trace_id": "tr_1002",
+    "timestamp": "2026-09-01T09:17:00Z",
+    "user_query": "How long do we have to download legacy invoice PDFs before retirement?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-003::t2",
+        "article_id": "BM-003",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.791,
+        "text": "Documentation context snippet for BM-003::t2 related to How long do we have to download legacy invoice PDFs before retirement?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "You have 12 months from your migration date to download all legacy invoice PDFs.",
+    "open_coding_observation": "Model applied the 12-month credit expiration window to legacy PDF downloads instead of the March 1, 2026 retirement deadline."
+  },
+  {
+    "trace_id": "tr_1003",
+    "timestamp": "2026-09-01T10:24:00Z",
+    "user_query": "Can unused migration credits be converted into cash refunds after 12 months?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-001::t2",
+        "article_id": "BM-001",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.812,
+        "text": "Documentation context snippet for BM-001::t2 related to Can unused migration credits be converted into cash refunds after 12 months?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Prorated credits from the old system convert at a 1:1 cash rate upon request to Tier-1 Support.",
+    "open_coding_observation": "Model stated migration credits convert to cash refunds, contradicting the non-negotiable forfeiture rule in BM-003."
+  },
+  {
+    "trace_id": "tr_1006",
+    "timestamp": "2026-09-01T13:45:00Z",
+    "user_query": "Can support extend my migration credit expiration by 6 months?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-003::t2",
+        "article_id": "BM-003",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.84,
+        "text": "Documentation context snippet for BM-003::t2 related to Can support extend my migration credit expiration by 6 months?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Yes, our support team can issue a temporary 6-month extension if you open a ticket with Billing Operations.",
+    "open_coding_observation": "Model promised support can grant a 6-month credit extension, violating the rule that only Account Executives handle non-extendable credits."
+  },
+  {
+    "trace_id": "tr_1007",
+    "timestamp": "2026-09-01T14:52:00Z",
+    "user_query": "Do enterprise accounts get an automatic 50% discount coupon upon completing migration?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-006::t0",
+        "article_id": "BM-006",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.69,
+        "text": "Documentation context snippet for BM-006::t0 related to Do enterprise accounts get an automatic 50% discount coupon upon completing migration?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Yes, all enterprise accounts receive an automatic 50% discount coupon upon completing migration addendum.",
+    "open_coding_observation": "Model invented an automatic 50% migration discount coupon not mentioned anywhere in the enterprise documentation."
+  },
+  {
+    "trace_id": "tr_1008",
+    "timestamp": "2026-09-01T15:59:00Z",
+    "user_query": "Can Tier-1 Support issue a direct courtesy refund for ERR-5001 dispute notice?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-007::t2",
+        "article_id": "BM-007",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.875,
+        "text": "Documentation context snippet for BM-007::t2 related to Can Tier-1 Support issue a direct courtesy refund for ERR-5001 dispute notice?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Yes, Tier-1 Support can immediately issue a courtesy refund through the billing console to satisfy the customer.",
+    "open_coding_observation": "Model authorized Tier-1 Support to issue direct refunds on ERR-5001 disputes, violating the strict prohibition requiring Fraud team approval."
+  },
+  {
+    "trace_id": "tr_1009",
+    "timestamp": "2026-09-01T16:16:00Z",
+    "user_query": "If our MIGRATION_CREDIT is disputed, can support add a manual credit on top?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-003::t3",
+        "article_id": "BM-003",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.83,
+        "text": "Documentation context snippet for BM-003::t3 related to If our MIGRATION_CREDIT is disputed, can support add a manual credit on top?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Support will issue a manual ledger credit to balance the disputed amount while engineering investigates.",
+    "open_coding_observation": "Model instructed support to issue manual credits on disputed amounts, directly violating the double-credit prohibition in BM-003."
+  },
+  {
+    "trace_id": "tr_1014",
+    "timestamp": "2026-09-02T21:51:00Z",
+    "user_query": "Customer card failed with ERR-4001 during re-tokenisation. What is the cause?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-002::t1",
+        "article_id": "BM-002",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.81,
+        "text": "Documentation context snippet for BM-002::t1 related to Customer card failed with ERR-4001 during re-tokenisation. What is the cause?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "The card was reported lost or stolen by the issuing bank; customer must not retry.",
+    "open_coding_observation": "Model attributed ERR-4001 (expired card) to ERR-4003 (stolen card), wrongly advising that the card was stolen."
+  },
+  {
+    "trace_id": "tr_1015",
+    "timestamp": "2026-09-02T08:58:00Z",
+    "user_query": "How are custom subscription plan codes beginning with ENT- handled in migration?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-006::t0",
+        "article_id": "BM-006",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.65,
+        "text": "Documentation context snippet for BM-006::t0 related to How are custom subscription plan codes beginning with ENT- handled in migration?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "I do not have sufficient information in the provided documentation to answer questions regarding custom ENT- contracts.",
+    "open_coding_observation": "Model falsely refused to answer how ENT- plan codes are handled despite BM-006 explaining the custom plan recreation process."
+  },
+  {
+    "trace_id": "tr_1016",
+    "timestamp": "2026-09-02T09:15:00Z",
+    "user_query": "Which SAML attribute must be configured in IdP for post-migration billing permissions?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-005::t1",
+        "article_id": "BM-005",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.64,
+        "text": "Documentation context snippet for BM-005::t1 related to Which SAML attribute must be configured in IdP for post-migration billing permissions?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "The documentation does not specify the SAML attribute required for Identity Provider authentication.",
+    "open_coding_observation": "Model issued a false refusal regarding SAML IdP configuration, missing the `ubp_billing_admin` attribute in BM-005."
+  },
+  {
+    "trace_id": "tr_1018",
+    "timestamp": "2026-09-02T11:29:00Z",
+    "user_query": "What is the escalation protocol when ERR-4020 credit overflow occurs?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-002::t3",
+        "article_id": "BM-002",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.895,
+        "text": "Documentation context snippet for BM-002::t3 related to What is the escalation protocol when ERR-4020 credit overflow occurs?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "ERR-4020 is a P1 severity condition (credit exceeding $10,000) and must be escalated immediately to Billing Engineering on-call. Support must not issue a manual credit (BM-002).",
+    "open_coding_observation": "Model accurately stated the P1 severity escalation to Billing Engineering on-call with BM-002 cited."
+  },
+  {
+    "trace_id": "tr_1028",
+    "timestamp": "2026-09-03T21:49:00Z",
+    "user_query": "Can Tier-1 Support issue a direct courtesy refund for ERR-5001 dispute notice?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-007::t2",
+        "article_id": "BM-007",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.875,
+        "text": "Documentation context snippet for BM-007::t2 related to Can Tier-1 Support issue a direct courtesy refund for ERR-5001 dispute notice?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Yes, Tier-1 Support can immediately issue a courtesy refund through the billing console to satisfy the customer.",
+    "open_coding_observation": "Model authorized Tier-1 Support to issue direct refunds on ERR-5001 disputes, violating the strict prohibition requiring Fraud team approval."
+  },
+  {
+    "trace_id": "tr_1035",
+    "timestamp": "2026-09-04T14:48:00Z",
+    "user_query": "How are custom subscription plan codes beginning with ENT- handled in migration?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-006::t0",
+        "article_id": "BM-006",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.65,
+        "text": "Documentation context snippet for BM-006::t0 related to How are custom subscription plan codes beginning with ENT- handled in migration?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "I do not have sufficient information in the provided documentation to answer questions regarding custom ENT- contracts.",
+    "open_coding_observation": "Model falsely refused to answer how ENT- plan codes are handled despite BM-006 explaining the custom plan recreation process."
+  },
+  {
+    "trace_id": "tr_1038",
+    "timestamp": "2026-09-04T17:19:00Z",
+    "user_query": "What is the escalation protocol when ERR-4020 credit overflow occurs?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-002::t3",
+        "article_id": "BM-002",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.895,
+        "text": "Documentation context snippet for BM-002::t3 related to What is the escalation protocol when ERR-4020 credit overflow occurs?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "ERR-4020 is a P1 severity condition (credit exceeding $10,000) and must be escalated immediately to Billing Engineering on-call. Support must not issue a manual credit (BM-002).",
+    "open_coding_observation": "Model accurately stated the P1 severity escalation to Billing Engineering on-call with BM-002 cited."
+  },
+  {
+    "trace_id": "tr_1041",
+    "timestamp": "2026-09-05T20:40:00Z",
+    "user_query": "What is the expiration timeframe for unused migration credits?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-001::t3",
+        "article_id": "BM-001",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.824,
+        "text": "Documentation context snippet for BM-001::t3 related to What is the expiration timeframe for unused migration credits?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Migration credits expire on 2026-03-01 along with the retirement of legacy PDF invoice formats.",
+    "open_coding_observation": "Model quoted the legacy PDF retirement deadline (2026-03-01) from BM-001 as the credit expiration date instead of the 12-month policy in BM-003."
+  },
+  {
+    "trace_id": "tr_1044",
+    "timestamp": "2026-09-05T09:11:00Z",
+    "user_query": "When is the cutover date for Phase 2 Business plan accounts?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-001::t1",
+        "article_id": "BM-001",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.778,
+        "text": "Documentation context snippet for BM-001::t1 related to When is the cutover date for Phase 2 Business plan accounts?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Phase 2 Business accounts were migrated on 2025-11-15 during the Pilot phase.",
+    "open_coding_observation": "Model cited the Pilot date (2025-11-15) for Phase 2 Business accounts instead of December 1, 2025."
+  },
+  {
+    "trace_id": "tr_1047",
+    "timestamp": "2026-09-05T12:32:00Z",
+    "user_query": "Do enterprise accounts get an automatic 50% discount coupon upon completing migration?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-006::t0",
+        "article_id": "BM-006",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.69,
+        "text": "Documentation context snippet for BM-006::t0 related to Do enterprise accounts get an automatic 50% discount coupon upon completing migration?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Yes, all enterprise accounts receive an automatic 50% discount coupon upon completing migration addendum.",
+    "open_coding_observation": "Model invented an automatic 50% migration discount coupon not mentioned anywhere in the enterprise documentation."
+  },
+  {
+    "trace_id": "tr_1048",
+    "timestamp": "2026-09-05T13:39:00Z",
+    "user_query": "Can Tier-1 Support issue a direct courtesy refund for ERR-5001 dispute notice?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-007::t2",
+        "article_id": "BM-007",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.875,
+        "text": "Documentation context snippet for BM-007::t2 related to Can Tier-1 Support issue a direct courtesy refund for ERR-5001 dispute notice?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "Yes, Tier-1 Support can immediately issue a courtesy refund through the billing console to satisfy the customer.",
+    "open_coding_observation": "Model authorized Tier-1 Support to issue direct refunds on ERR-5001 disputes, violating the strict prohibition requiring Fraud team approval."
+  },
+  {
+    "trace_id": "tr_1052",
+    "timestamp": "2026-09-06T17:17:00Z",
+    "user_query": "What is the fix when webhook signature verification fails with ERR-4040?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-002::t2",
+        "article_id": "BM-002",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.735,
+        "text": "Documentation context snippet for BM-002::t2 related to What is the fix when webhook signature verification fails with ERR-4040?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "ERR-4040 means the webhook secret rotated automatically during migration.",
+    "open_coding_observation": "Model stated the cause of ERR-4040 but omitted the fix instruction to rotate secret under Developer Settings."
+  },
+  {
+    "trace_id": "tr_1057",
+    "timestamp": "2026-09-06T08:52:00Z",
+    "user_query": "What HTTP header replaces X-Billing-Token in UBP API requests?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-004::t1",
+        "article_id": "BM-004",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.91,
+        "text": "Documentation context snippet for BM-004::t1 related to What HTTP header replaces X-Billing-Token in UBP API requests?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "UBP API requests authenticate using the standard Bearer token header `Authorization: Bearer <API-KEY>` in place of `X-Billing-Token` (BM-004).",
+    "open_coding_observation": "Model accurately identified the `Authorization: Bearer <API-KEY>` header and cited BM-004."
+  },
+  {
+    "trace_id": "tr_1058",
+    "timestamp": "2026-09-06T09:59:00Z",
+    "user_query": "What is the escalation protocol when ERR-4020 credit overflow occurs?",
+    "article_filters": null,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "BM-002::t3",
+        "article_id": "BM-002",
+        "subject": "Billing Migration Reference Guide",
+        "score": 0.895,
+        "text": "Documentation context snippet for BM-002::t3 related to What is the escalation protocol when ERR-4020 credit overflow occurs?."
+      }
+    ],
+    "prompt_template_version": "v2.4-support-rag",
+    "system_prompt": "You are an expert customer support assistant for the Unified Billing Platform (UBP) migration. Use only the provided documentation context to answer customer inquiries accurately, citing relevant article IDs and error codes. If the context does not contain the answer, state clearly that you do not have sufficient information.",
+    "model": "claude-3-5-sonnet-20241022",
+    "model_params": {
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "top_p": 1.0
+    },
+    "raw_output": "ERR-4020 is a P1 severity condition (credit exceeding $10,000) and must be escalated immediately to Billing Engineering on-call. Support must not issue a manual credit (BM-002).",
+    "open_coding_observation": "Model accurately stated the P1 severity escalation to Billing Engineering on-call with BM-002 cited."
+  }
+]
