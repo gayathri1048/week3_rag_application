@@ -583,10 +583,16 @@ def get_error_analysis_data() -> dict[str, Any]:
         tid = t.get("trace_id")
         t["open_coding_observation"] = open_coding_sentences.get(tid, "Evaluated trace output.")
 
+    from ...telemetry import is_langfuse_configured
+    settings = get_settings()
+    host_url = settings.langfuse_base_url or settings.langfuse_host
+
     return {
         "seed": 42,
         "total_pool_size": 60,
         "sampled_count": len(sampled_traces),
+        "langfuse_configured": is_langfuse_configured(),
+        "langfuse_host": host_url,
         "taxonomy": taxonomy,
         "sampled_traces": sampled_traces,
         "replay_evidence": {
