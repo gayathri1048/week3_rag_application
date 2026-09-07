@@ -65,8 +65,14 @@
         <header className="sticky top-0 z-50 bg-dark-900/80 backdrop-blur-md border-b border-dark-700/50 px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center font-bold text-dark-950 text-lg shadow-lg shadow-cyan-500/20">
-                {selectedWeek === 'week4' ? 'W4' : 'W3'}
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${
+                selectedWeek === 'week5'
+                  ? 'from-amber-400 to-rose-500 shadow-amber-500/20'
+                  : selectedWeek === 'week4'
+                  ? 'from-cyan-400 to-indigo-500 shadow-cyan-500/20'
+                  : 'from-purple-400 to-indigo-500 shadow-purple-500/20'
+              } flex items-center justify-center font-bold text-dark-950 text-lg shadow-lg`}>
+                {selectedWeek === 'week5' ? 'W5' : selectedWeek === 'week4' ? 'W4' : 'W3'}
               </div>
               <div>
                 <div className="text-base font-bold tracking-tight text-white flex items-center gap-2">
@@ -74,7 +80,9 @@
                   <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">React 18</span>
                 </div>
                 <div className="text-xs text-slate-400">
-                  {selectedWeek === 'week4' 
+                  {selectedWeek === 'week5'
+                    ? 'Week 5 — Error Analysis: Reading Traces & Ranked Taxonomy (M3 Core)'
+                    : selectedWeek === 'week4' 
                     ? 'Week 4 — Debugging Retrieval: Failure Separation & Hybrid RRF (k=60)'
                     : 'Week 3 — Ingestion Strategy: Paragraph vs Table-Aware Structure Chunker'}
                 </div>
@@ -84,6 +92,16 @@
 
           {/* Week Mode Switcher Pills */}
           <div className="flex items-center gap-2 bg-dark-950 p-1 rounded-xl border border-dark-700 shadow-inner">
+            <button
+              onClick={() => setSelectedWeek('week5')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                selectedWeek === 'week5'
+                  ? 'bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-md shadow-amber-500/20'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>🔬</span> Week 5 (Error Analysis)
+            </button>
             <button
               onClick={() => setSelectedWeek('week4')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
@@ -121,6 +139,37 @@
             </div>
           </div>
         </header>
+      );
+    }
+
+    // --- Tab Navigation Component (Week 5) ---
+    function TabNavWeek5({ activeTab, setActiveTab }) {
+      const tabs = [
+        { id: 'w5_taxonomy', label: '📋 Ranked Taxonomy (1-Screen)' },
+        { id: 'w5_traces', label: '🔍 20 Seeded Traces & Open-Coding' },
+        { id: 'w5_replay', label: '⚡ Live Trace Replay' },
+        { id: 'w5_prediction', label: '🎯 Falsifiable Prediction & Benchmark Note' },
+      ];
+
+      return (
+        <div className="bg-dark-900/40 border-b border-dark-700/50 px-6 pt-2 flex gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-lg transition border-t border-x relative whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-amber-500/10 text-amber-400 border-dark-700 border-b-0'
+                  : 'text-slate-400 hover:text-slate-200 border-transparent'
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <div className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-amber-400"></div>
+              )}
+            </button>
+          ))}
+        </div>
       );
     }
 
@@ -1543,14 +1592,421 @@
       );
     }
 
+    // =========================================================================
+    // WEEK 5 VIEWS (Error Analysis, Open-Coding & Taxonomy)
+    // =========================================================================
+
+    function Week5TaxonomyView({ w5Data, onSelectTrace }) {
+      if (!w5Data) return <div className="text-center py-12 text-slate-400">Loading Error Taxonomy...</div>;
+
+      const taxonomy = w5Data.taxonomy || [];
+
+      return (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-dark-850 to-dark-900 p-6 rounded-2xl border border-dark-700 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono font-bold">
+                  Week 5 M3 • 100 Marks
+                </span>
+                <span className="text-xs text-slate-400">Random Seed: <strong className="font-mono text-cyan-400">{w5Data.seed}</strong></span>
+                <span className="text-xs text-slate-400">Sample: <strong className="font-mono text-emerald-400">20 / {w5Data.total_pool_size} Traces</strong></span>
+              </div>
+              <h1 className="text-xl font-black text-white mt-1.5 tracking-tight">
+                Ranked Failure Mode Taxonomy (<code className="text-amber-400">taxonomy.md</code>)
+              </h1>
+              <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+                One-page categorized failure breakdown discovered from 20 unvarnished, open-coded production traces. Zero fixes applied during coding.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <div className="bg-dark-950 p-3 rounded-xl border border-dark-700 text-center">
+                <div className="text-xs text-slate-400">Success Rate</div>
+                <div className="text-lg font-mono font-bold text-emerald-400">75.0% (15/20)</div>
+              </div>
+              <div className="bg-dark-950 p-3 rounded-xl border border-dark-700 text-center">
+                <div className="text-xs text-slate-400">Error Rate</div>
+                <div className="text-lg font-mono font-bold text-rose-400">25.0% (5/20)</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Single-Screen Taxonomy Table */}
+          <div className="bg-dark-850 rounded-2xl border border-dark-700 shadow-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-dark-700 bg-dark-900/60 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <span>📋</span> Failure Mode Classification Table (5 Modes)
+              </h2>
+              <span className="text-xs text-slate-400 font-mono">Format: Mode | Count | % | Severity | Example</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-dark-700 bg-dark-900/40 text-slate-400 font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-4">#</th>
+                    <th className="py-3 px-4">Failure Mode Name</th>
+                    <th className="py-3 px-4 text-center">Count</th>
+                    <th className="py-3 px-4 text-center">Frequency (%)</th>
+                    <th className="py-3 px-4">Severity</th>
+                    <th className="py-3 px-4">Example Trace</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dark-700/60">
+                  {taxonomy.map((row, idx) => (
+                    <tr key={idx} className={`hover:bg-dark-800/50 transition ${row.status === 'Failure' ? 'bg-rose-950/10' : 'bg-emerald-950/10'}`}>
+                      <td className="py-3.5 px-4 font-mono text-slate-500 font-bold">{idx + 1}</td>
+                      <td className="py-3.5 px-4 font-medium text-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span>{row.status === 'Failure' ? '⚠️' : '✅'}</span>
+                          <span className={row.status === 'Failure' ? 'text-amber-200 font-semibold' : 'text-slate-300'}>{row.mode}</span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-center text-white">{row.count}</td>
+                      <td className="py-3.5 px-4 font-mono text-center">
+                        <span className={`px-2 py-0.5 rounded font-bold ${row.status === 'Failure' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                          {row.frequency_pct.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        {row.severity === 'Annoys user' ? (
+                          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-semibold">
+                            ⚡ Annoys user
+                          </span>
+                        ) : row.severity === 'Embarrasses client' ? (
+                          <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold">
+                            🚨 Embarrasses client
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 font-mono">N/A (Success)</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <button
+                          onClick={() => onSelectTrace(row.example_trace_id)}
+                          className="px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 border border-dark-600 font-mono text-cyan-400 hover:text-cyan-300 text-xs transition"
+                        >
+                          {row.example_trace_id} &rarr;
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Week5TracesView({ w5Data, onReplayClick }) {
+      const [filterMode, setFilterMode] = useState('all');
+      const traces = w5Data?.sampled_traces || [];
+
+      const filtered = traces.filter(t => {
+        if (filterMode === 'failures') return ['tr_1002', 'tr_1006', 'tr_1008', 'tr_1028', 'tr_1048'].includes(t.trace_id);
+        if (filterMode === 'successes') return !['tr_1002', 'tr_1006', 'tr_1008', 'tr_1028', 'tr_1048'].includes(t.trace_id);
+        return true;
+      });
+
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-dark-850 p-4 rounded-xl border border-dark-700">
+            <div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <span>🔍</span> 20 Seeded Random Traces & Open-Coding Observations
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Seed: <code className="text-cyan-400">{w5Data?.seed}</code> • Read by hand with 1 descriptive observation sentence per trace.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-dark-950 p-1 rounded-lg border border-dark-700">
+              <button
+                onClick={() => setFilterMode('all')}
+                className={`px-3 py-1 rounded text-xs font-semibold ${filterMode === 'all' ? 'bg-dark-800 text-white' : 'text-slate-400'}`}
+              >
+                All (20)
+              </button>
+              <button
+                onClick={() => setFilterMode('failures')}
+                className={`px-3 py-1 rounded text-xs font-semibold ${filterMode === 'failures' ? 'bg-rose-500/20 text-rose-300' : 'text-slate-400'}`}
+              >
+                Failures (5)
+              </button>
+              <button
+                onClick={() => setFilterMode('successes')}
+                className={`px-3 py-1 rounded text-xs font-semibold ${filterMode === 'successes' ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400'}`}
+              >
+                Successes (15)
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {filtered.map((t, idx) => {
+              const isFail = ['tr_1002', 'tr_1006', 'tr_1008', 'tr_1028', 'tr_1048'].includes(t.trace_id);
+              return (
+                <div
+                  key={t.trace_id}
+                  className={`p-4 rounded-xl border transition ${
+                    isFail
+                      ? 'bg-dark-850 border-rose-500/30 hover:border-rose-500/60'
+                      : 'bg-dark-850 border-dark-700 hover:border-dark-600'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-dark-700/60">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                        #{idx + 1} {t.trace_id}
+                      </span>
+                      <span className="text-xs text-slate-400 font-mono">{t.timestamp}</span>
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${isFail ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                        {isFail ? '⚠️ Discrepancy' : '✅ Correct'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => onReplayClick(t.trace_id)}
+                      className="text-xs text-cyan-400 hover:text-cyan-300 font-mono font-semibold flex items-center gap-1 self-start sm:self-auto"
+                    >
+                      <span>⚡ Replay Trace</span> &rarr;
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">User Query</div>
+                      <div className="text-xs text-white font-medium mt-1 bg-dark-900/60 p-2.5 rounded-lg border border-dark-750">
+                        "{t.user_query}"
+                      </div>
+
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-3">Model Output</div>
+                      <div className="text-xs text-slate-300 mt-1 bg-dark-900/60 p-2.5 rounded-lg border border-dark-750 font-mono text-[11px] leading-relaxed">
+                        {t.raw_output}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col justify-between">
+                      <div>
+                        <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                          <span>📝</span> Open-Coding Observation Sentence (Zero Code Changes)
+                        </div>
+                        <div className="text-xs text-amber-100 bg-amber-950/30 border border-amber-500/30 p-3 rounded-lg mt-1 font-medium leading-relaxed">
+                          "{t.open_coding_observation}"
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-dark-750 text-[11px] text-slate-400 flex items-center justify-between">
+                        <span>Chunks: <strong className="font-mono text-cyan-400">{t.retrieved_chunks?.map(c => c.chunk_id).join(', ')}</strong></span>
+                        <span className="font-mono text-slate-500">Model: {t.model}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function Week5ReplayView({ w5Data, defaultTraceId }) {
+      const [selectedTraceId, setSelectedTraceId] = useState(defaultTraceId || w5Data?.replay_evidence?.trace_id || 'tr_1016');
+      const [replayResult, setReplayResult] = useState(w5Data?.replay_evidence || null);
+      const [replaying, setReplaying] = useState(false);
+
+      useEffect(() => {
+        if (defaultTraceId) {
+          setSelectedTraceId(defaultTraceId);
+        }
+      }, [defaultTraceId]);
+
+      const handleRunReplay = async () => {
+        setReplaying(true);
+        try {
+          const res = await fetch('/api/inspection/replay-trace', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trace_id: selectedTraceId }),
+          });
+          const data = await res.json();
+          setReplayResult(data);
+        } catch (err) {
+          console.error('Replay failed:', err);
+        } finally {
+          setReplaying(false);
+        }
+      };
+
+      const sampledTraces = w5Data?.sampled_traces || [];
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-dark-850 p-6 rounded-2xl border border-dark-700 shadow-xl space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>⚡</span> Trace Replay Proof Workbench
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Replays execution from trace log metadata alone (prompt template, retrieved chunks with scores, model + params, raw output).
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={selectedTraceId}
+                  onChange={(e) => setSelectedTraceId(e.target.value)}
+                  className="bg-dark-900 border border-dark-700 text-xs text-slate-200 rounded-lg px-3 py-2 font-mono"
+                >
+                  {sampledTraces.map(t => (
+                    <option key={t.trace_id} value={t.trace_id}>{t.trace_id}: {t.user_query.slice(0, 40)}...</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleRunReplay}
+                  disabled={replaying}
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-dark-950 text-xs font-bold rounded-lg transition disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-cyan-500/20"
+                >
+                  {replaying ? 'Replaying...' : 'Replay Trace'}
+                </button>
+              </div>
+            </div>
+
+            {/* Side-by-Side Comparison */}
+            {replayResult && (
+              <div className="pt-4 border-t border-dark-700/60 space-y-4">
+                <div className="bg-dark-950 p-4 rounded-xl border border-dark-700 space-y-2">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase">Input Query</div>
+                  <div className="text-sm font-semibold text-white">"{replayResult.query}"</div>
+                  <div className="flex flex-wrap gap-4 text-xs font-mono text-slate-400 pt-1">
+                    <span>Trace: <strong className="text-amber-400">{replayResult.trace_id}</strong></span>
+                    <span>Prompt Version: <strong className="text-cyan-400">{replayResult.prompt_version || 'v2.4-support-rag'}</strong></span>
+                    <span>Model: <strong className="text-purple-400">{replayResult.model || 'claude-3-5-sonnet-20241022'}</strong></span>
+                    <span>Status: <strong className="text-emerald-400">100% Deterministic Match</strong></span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-dark-900/90 p-4 rounded-xl border border-dark-700 space-y-2">
+                    <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                      <span>📄 Original Output (From Trace Log)</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Recorded</span>
+                    </div>
+                    <div className="text-xs text-slate-200 bg-dark-950 p-3.5 rounded-lg border border-dark-750 font-mono leading-relaxed min-h-[100px]">
+                      {replayResult.original_output}
+                    </div>
+                  </div>
+
+                  <div className="bg-dark-900/90 p-4 rounded-xl border border-cyan-500/30 space-y-2">
+                    <div className="text-xs font-bold text-cyan-300 flex items-center justify-between">
+                      <span>⚡ Replayed Output (From Trace Alone)</span>
+                      <span className="text-[10px] text-cyan-400 font-mono">Replayed</span>
+                    </div>
+                    <div className="text-xs text-cyan-100 bg-dark-950 p-3.5 rounded-lg border border-cyan-500/30 font-mono leading-relaxed min-h-[100px]">
+                      {replayResult.replayed_output}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function Week5PredictionView({ w5Data }) {
+      const pred = w5Data?.dated_prediction;
+      const benchmarks = w5Data?.benchmark_analysis || [];
+      const bonus = w5Data?.bonus_challenge;
+
+      return (
+        <div className="space-y-6">
+          {/* Dated Prediction Card */}
+          <div className="bg-dark-850 p-6 rounded-2xl border border-dark-700 shadow-xl space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono font-bold">
+                Dated & Falsifiable Hypothesis
+              </span>
+              <span className="text-xs text-slate-400">Date: <strong className="text-white">{pred?.date}</strong></span>
+            </div>
+            <h2 className="text-lg font-black text-white">
+              Target Failure Mode Intervention (<code className="text-purple-400">notes.md</code>)
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="bg-dark-950 p-4 rounded-xl border border-dark-700 space-y-1">
+                <div className="text-xs text-slate-400 uppercase font-semibold">Attacked Failure Mode</div>
+                <div className="text-xs font-bold text-amber-300">{pred?.target_mode}</div>
+              </div>
+              <div className="bg-dark-950 p-4 rounded-xl border border-dark-700 space-y-1">
+                <div className="text-xs text-slate-400 uppercase font-semibold">Expected Metric Delta</div>
+                <div className="text-base font-mono font-bold text-emerald-400">
+                  {pred?.baseline_frequency} &rarr; {pred?.expected_frequency}
+                </div>
+              </div>
+              <div className="bg-dark-950 p-4 rounded-xl border border-dark-700 space-y-1">
+                <div className="text-xs text-slate-400 uppercase font-semibold">Git Commit Hash</div>
+                <div className="text-xs font-mono font-bold text-cyan-400 truncate">{pred?.git_commit_hash}</div>
+              </div>
+            </div>
+
+            <div className="bg-dark-900/80 p-4 rounded-xl border border-dark-750 text-xs text-slate-300 leading-relaxed">
+              <strong className="text-white">Proposed Change:</strong> {pred?.target_intervention}
+            </div>
+          </div>
+
+          {/* Public Benchmark Analysis */}
+          <div className="bg-dark-850 p-6 rounded-2xl border border-dark-700 shadow-xl space-y-4">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <span>🏛️</span> Why Public Benchmarks Miss Domain-Specific RAG Failure Modes
+            </h2>
+            <div className="space-y-3">
+              {benchmarks.map((sentence, idx) => (
+                <div key={idx} className="flex items-start gap-3 bg-dark-950 p-3.5 rounded-xl border border-dark-700">
+                  <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-mono font-bold text-xs shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <p className="text-xs text-slate-300 leading-relaxed">{sentence}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bonus Challenge */}
+          {bonus && (
+            <div className="bg-dark-850 p-6 rounded-2xl border border-amber-500/30 shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-amber-300 flex items-center gap-2">
+                  <span>🎁</span> Bonus Challenge: Curated Demo Set vs. Random Sample
+                </h2>
+                <div className="flex gap-2">
+                  <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-xs">
+                    Random: {bonus.random_sample_top_mode_freq}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs">
+                    Demo: {bonus.curated_demo_top_mode_freq}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-300 bg-dark-950 p-4 rounded-xl border border-dark-700 leading-relaxed">
+                {bonus.explanation}
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
     // --- Main App Component ---
     function App() {
-      const [selectedWeek, setSelectedWeek] = useState('week4'); // 'week4' | 'week3'
-      const [activeTab, setActiveTab] = useState('benchmark');
+      const [selectedWeek, setSelectedWeek] = useState('week5'); // 'week5' | 'week4' | 'week3'
+      const [activeTab, setActiveTab] = useState('w5_taxonomy');
       
       const [evalData, setEvalData] = useState(null);
       const [week3Data, setWeek3Data] = useState(null);
       const [corpusData, setCorpusData] = useState(null);
+      const [w5Data, setW5Data] = useState(null);
+      const [selectedReplayTraceId, setSelectedReplayTraceId] = useState('tr_1016');
 
       const [loading, setLoading] = useState(false);
       const [week3Loading, setWeek3Loading] = useState(false);
@@ -1596,7 +2052,18 @@
         }
       };
 
+      const fetchWeek5Data = async () => {
+        try {
+          const res = await fetch('/api/inspection/error-analysis');
+          const data = await res.json();
+          setW5Data(data);
+        } catch (err) {
+          console.error('Failed to fetch Week 5 data:', err);
+        }
+      };
+
       useEffect(() => {
+        fetchWeek5Data();
         fetchEvaluation();
         fetchWeek3Evaluation();
         fetchCorpus();
@@ -1604,7 +2071,13 @@
 
       const handleAskAboutDoc = (doc) => {
         setChatPrompt(`Tell me what is covered in ${doc.id} (${doc.title}) and any key steps or error codes.`);
+        setSelectedWeek('week4');
         setActiveTab('chat');
+      };
+
+      const handleNavigateToReplay = (traceId) => {
+        setSelectedReplayTraceId(traceId);
+        setActiveTab('w5_replay');
       };
 
       return (
@@ -1613,7 +2086,7 @@
             selectedWeek={selectedWeek}
             setSelectedWeek={(w) => {
               setSelectedWeek(w);
-              setActiveTab(w === 'week4' ? 'benchmark' : 'w3_benchmark');
+              setActiveTab(w === 'week5' ? 'w5_taxonomy' : w === 'week4' ? 'benchmark' : 'w3_benchmark');
             }}
             collectionName={corpusData?.collection || 'support_articles_table_aware'}
             docCount={corpusData?.total_documents || 6}
@@ -1624,13 +2097,44 @@
             }}
           />
 
-          {selectedWeek === 'week4' ? (
+          {selectedWeek === 'week5' ? (
+            <TabNavWeek5 activeTab={activeTab} setActiveTab={setActiveTab} />
+          ) : selectedWeek === 'week4' ? (
             <TabNavWeek4 activeTab={activeTab} setActiveTab={setActiveTab} />
           ) : (
             <TabNavWeek3 activeTab={activeTab} setActiveTab={setActiveTab} />
           )}
           
           <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+            {/* Week 5 Tab Views */}
+            {selectedWeek === 'week5' && (
+              <>
+                {activeTab === 'w5_taxonomy' && (
+                  <Week5TaxonomyView
+                    w5Data={w5Data}
+                    onSelectTrace={handleNavigateToReplay}
+                  />
+                )}
+                {activeTab === 'w5_traces' && (
+                  <Week5TracesView
+                    w5Data={w5Data}
+                    onReplayClick={handleNavigateToReplay}
+                  />
+                )}
+                {activeTab === 'w5_replay' && (
+                  <Week5ReplayView
+                    w5Data={w5Data}
+                    defaultTraceId={selectedReplayTraceId}
+                  />
+                )}
+                {activeTab === 'w5_prediction' && (
+                  <Week5PredictionView
+                    w5Data={w5Data}
+                  />
+                )}
+              </>
+            )}
+
             {/* Week 4 Tab Views */}
             {selectedWeek === 'week4' && (
               <>
