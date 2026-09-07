@@ -125,6 +125,14 @@ def log_rag_trace(
         # Complete root observation
         root_span.update(output={"answer": answer})
         root_span.end()
+        client.flush()
+
+        logger.info(
+            "📡 [Langfuse] Logged live RAG trace: query='%s...', chunks=%d, model=%s",
+            query[:40].replace("\n", " "),
+            len(chunks_payload),
+            model,
+        )
 
         return root_span
     except Exception as exc:

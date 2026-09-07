@@ -49,6 +49,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception:
         logger.exception("vector store failed to initialise")
 
+    # Check Langfuse Observability status on boot
+    from .telemetry import is_langfuse_configured, get_langfuse_client
+    if is_langfuse_configured():
+        host_url = settings.langfuse_base_url or settings.langfuse_host
+        logger.info("🚀 Langfuse Observability ACTIVE: connected to %s", host_url)
+    else:
+        logger.info("ℹ️ Langfuse Observability inactive (no keys in .env)")
+
     yield
     logger.info("shutting down")
 
